@@ -283,7 +283,8 @@ export let mockArticles: Article[] = [
     authorId: 'auth_4',
     status: 'published',
     createdAt: '2026-03-29T10:00:00Z',
-    articleType: 'explainer'
+    articleType: 'explainer',
+    tags: ['Privacy', 'Policy']
   },
   {
     id: 'art_exp_2',
@@ -295,7 +296,8 @@ export let mockArticles: Article[] = [
     authorId: 'auth_3',
     status: 'published',
     createdAt: '2026-03-29T11:00:00Z',
-    articleType: 'explainer'
+    articleType: 'explainer',
+    tags: ['Budget', 'Finance']
   },
   {
     id: 'art_exp_3',
@@ -307,7 +309,8 @@ export let mockArticles: Article[] = [
     authorId: 'auth_1',
     status: 'published',
     createdAt: '2026-03-29T12:00:00Z',
-    articleType: 'explainer'
+    articleType: 'explainer',
+    tags: ['Education', 'Exams']
   },
   {
     id: 'art_op_1',
@@ -319,7 +322,8 @@ export let mockArticles: Article[] = [
     authorId: 'auth_1',
     status: 'published',
     createdAt: '2026-03-28T09:00:00Z',
-    articleType: 'opinion'
+    articleType: 'opinion',
+    tags: ['Economy', 'Rural']
   },
   {
     id: 'art_op_2',
@@ -331,7 +335,8 @@ export let mockArticles: Article[] = [
     authorId: 'auth_4',
     status: 'published',
     createdAt: '2026-03-28T10:00:00Z',
-    articleType: 'opinion'
+    articleType: 'opinion',
+    tags: ['AI', 'Tech']
   },
   {
     id: 'art_op_3',
@@ -343,7 +348,8 @@ export let mockArticles: Article[] = [
     authorId: 'auth_5',
     status: 'published',
     createdAt: '2026-03-28T11:00:00Z',
-    articleType: 'opinion'
+    articleType: 'opinion',
+    tags: ['Sports', 'India']
   },
   {
     id: 'art_op_4',
@@ -355,7 +361,8 @@ export let mockArticles: Article[] = [
     authorId: 'auth_2',
     status: 'published',
     createdAt: '2026-03-28T12:00:00Z',
-    articleType: 'opinion'
+    articleType: 'opinion',
+    tags: ['Politics', 'Elections']
   },
   {
     id: 'art_vid_1',
@@ -366,7 +373,8 @@ export let mockArticles: Article[] = [
     categoryId: 'cat_videos',
     authorId: 'auth_3',
     status: 'published',
-    createdAt: '2026-03-27T10:00:00Z'
+    createdAt: '2026-03-27T10:00:00Z',
+    tags: ['Markets', 'Video']
   },
   {
     id: 'art_vid_2',
@@ -377,7 +385,8 @@ export let mockArticles: Article[] = [
     categoryId: 'cat_videos',
     authorId: 'auth_1',
     status: 'published',
-    createdAt: '2026-03-27T11:00:00Z'
+    createdAt: '2026-03-27T11:00:00Z',
+    tags: ['Tech', 'Interview']
   },
   {
     id: 'art_vid_3',
@@ -388,7 +397,8 @@ export let mockArticles: Article[] = [
     categoryId: 'cat_videos',
     authorId: 'auth_2',
     status: 'published',
-    createdAt: '2026-03-27T12:00:00Z'
+    createdAt: '2026-03-27T12:00:00Z',
+    tags: ['Environment', 'Maharashtra']
   },
   {
     id: 'art_vid_4',
@@ -399,7 +409,8 @@ export let mockArticles: Article[] = [
     categoryId: 'cat_videos',
     authorId: 'auth_4',
     status: 'published',
-    createdAt: '2026-03-27T13:00:00Z'
+    createdAt: '2026-03-27T13:00:00Z',
+    tags: ['Startups', 'Funding']
   },
   {
     id: 'art_vid_5',
@@ -410,7 +421,8 @@ export let mockArticles: Article[] = [
     categoryId: 'cat_videos',
     authorId: 'auth_5',
     status: 'published',
-    createdAt: '2026-03-27T14:00:00Z'
+    createdAt: '2026-03-27T14:00:00Z',
+    tags: ['Cricket', 'Highlights']
   }
 ];
 

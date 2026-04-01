@@ -6,7 +6,11 @@ const delay = (ms: number = 300) => new Promise(res => setTimeout(res, ms));
 
 export async function getAllArticles(): Promise<Article[]> {
   await delay();
-  return [...mockArticles].sort((a, b) => new Date(b.createdAt as string).getTime() - new Date(a.createdAt as string).getTime());
+  return [...mockArticles].sort((a, b) => {
+    const dateA = new Date(a.createdAt || 0).getTime();
+    const dateB = new Date(b.createdAt || 0).getTime();
+    return dateB - dateA;
+  });
 }
 
 export async function getArticleById(id: string): Promise<Article | null> {

@@ -14,6 +14,20 @@ import {
 
 // Force dynamic or let Next.js cache depending on needs (Revalidating every hour fits CMS)
 export const revalidate = 3600;
+ 
+// Safe date formatter for admin dashboard
+const formatAdminDate = (dateVal: string | number | undefined) => {
+  if (!dateVal) return 'N/A';
+  try {
+    const d = new Date(dateVal);
+    if (isNaN(d.getTime())) return 'Invalid Date';
+    return d.toLocaleDateString('en-US', {
+      month: 'short', day: 'numeric', year: 'numeric'
+    });
+  } catch (e) {
+    return 'Error';
+  }
+};
 
 export default async function AdminDashboard() {
   const statsData = await getDashboardStats();
@@ -163,7 +177,7 @@ export default async function AdminDashboard() {
                           </div>
                           <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wider flex items-center gap-2">
                              {/* Category and tag parsing from mock structure */}
-                            {article.tags.slice(0, 1).join(',')} 
+                             {article.tags?.slice(0, 1).join(',')} 
                             {article.status === 'published' && article.featured && <span className="text-red-500">• Featured</span>}
                           </div>
                         </td>
@@ -183,9 +197,7 @@ export default async function AdminDashboard() {
                            )}
                         </td>
                         <td className="py-4 px-6 text-muted-foreground whitespace-nowrap">
-                          {new Date(article.createdAt).toLocaleDateString('en-US', {
-                            month: 'short', day: 'numeric', year: 'numeric'
-                          })}
+                          {formatAdminDate(article.createdAt)}
                         </td>
                         <td className="py-4 px-6 text-right">
                           <Link 
