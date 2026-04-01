@@ -1,0 +1,123 @@
+export type Language = 'en' | 'hi';
+
+export const TRANSLATIONS = {
+  en: {
+    // Navbar / Categories
+    home: 'Home',
+    latest: 'Latest',
+    india: 'India',
+    states: 'States',
+    politics: 'Politics',
+    economy: 'Economy',
+    technology: 'Tech',
+    sports: 'Sports',
+    explainers: 'Explainers',
+    videos: 'Videos',
+    jobs: 'Jobs',
+    exams: 'Exams',
+
+    // Section Titles
+    national_news: 'India / National',
+    state_news: 'States',
+    politics_news: 'Politics',
+    economy_news: 'Economy',
+    tech_news: 'Tech & Startups',
+    jobs_news: 'Jobs & Careers',
+    exams_news: 'Exams & Notifications',
+    sports_news: 'Sports',
+    entertainment_news: 'Entertainment',
+    opinion: 'Opinion',
+    must_watch: 'Must Watch',
+    visual_stories: 'Visual Stories',
+    trending: 'Trending Now',
+    latest_updates: 'Latest Updates',
+
+    // UI Labels
+    breaking: 'Breaking',
+    read_more: 'Read full story',
+    share_on: 'Share on',
+    key_highlights: 'In Brief',
+    search_placeholder: 'Search for news, topics...',
+    no_results: 'No results found',
+    back_to_articles: 'Back to Articles',
+    more_from_author: 'More from this author',
+    reset_prefs: 'Reset Preferences',
+    customize_feed: 'Customize Your Feed',
+    coming_soon: 'Coming soon',
+
+    // Footer
+    about_drishyam: 'Bringing you breaking news, sharp analysis, and complete coverage of India — from the ground up to the national stage.',
+    sections: 'Sections',
+    company: 'Company',
+    connect: 'Connect',
+    about_us: 'About Us',
+    careers: 'Careers',
+    advertise: 'Advertise with us',
+    fact_check: 'Fact-check Policy',
+    contact: 'Contact',
+    privacy: 'Privacy Policy',
+    terms: 'Terms of Service',
+    made_for_india: 'Made for India. © 2026 Drishyam News.',
+  },
+  hi: {
+    // Navbar / Categories
+    home: 'होम',
+    latest: 'ताज़ा',
+    india: 'भारत',
+    states: 'राज्य',
+    politics: 'राजनीति',
+    economy: 'अर्थव्यवस्था',
+    technology: 'टेक',
+    sports: 'खेल',
+    entertainment: 'मनोरंजन',
+    explainers: 'एक्सप्लेनर्स',
+    videos: 'वीडियो',
+    jobs: 'नौकरी',
+    exams: 'परीक्षा',
+
+    // Section Titles
+    national_news: 'भारत / राष्ट्रीय',
+    state_news: 'राज्य समाचार',
+    politics_news: 'राजनीति',
+    economy_news: 'अर्थव्यवस्था',
+    tech_news: 'टेक और स्टार्टअप',
+    jobs_news: 'नौकरी और करियर',
+    exams_news: 'परीक्षा और सूचनाएं',
+    sports_news: 'खेल',
+    entertainment_news: 'मनोरंजन',
+    opinion: 'विचार',
+    must_watch: 'ज़रूर देखें',
+    visual_stories: 'विजुअल स्टोरीज',
+    trending: 'ट्रेंडिंग न्यूज़',
+    latest_updates: 'ताज़ा अपडेट',
+
+    // UI Labels
+    breaking: 'breaking',
+    read_more: 'पूरी खबर पढ़ें',
+    share_on: 'शेयर करें',
+    key_highlights: 'संक्षेप में',
+    search_placeholder: 'खबरों और विषयों की खोज करें...',
+    no_results: 'कोई परिणाम नहीं मिला',
+    back_to_articles: 'खबरों पर वापस जाएं',
+    more_from_author: 'लेखक की और खबरें',
+    reset_prefs: 'प्राथमिकताएं रीसेट करें',
+    customize_feed: 'अपनी फीड कस्टमाइज़ करें',
+    coming_soon: 'जल्द आ रहा है',
+
+    // Footer
+    about_drishyam: 'ब्रेकिंग न्यूज़, सटीक विश्लेषण और भारत की पूरी कवरेज — ज़मीनी स्तर से राष्ट्रीय मंच तक।',
+    sections: 'सेक्शन',
+    company: 'कंपनी',
+    connect: 'जुड़ें',
+    about_us: 'हमारे बारे में',
+    careers: 'करियर',
+    advertise: 'विज्ञापन दें',
+    fact_check: 'फैक्ट-चेक पॉलिसी',
+    contact: 'संपर्क करें',
+    privacy: 'गोपनीयता नीति',
+    terms: 'सेवा की शर्तें',
+    made_for_india: 'भारत के लिए निर्मित। © 2026 Drishyam News.',
+  }
+};
+
+export type TranslationKey = keyof typeof TRANSLATIONS.en;

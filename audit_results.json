@@ -1,0 +1,123 @@
+{
+  "total": 29,
+  "passed": 29,
+  "failed": 0,
+  "results": [
+    {
+      "route": "/",
+      "status": 200
+    },
+    {
+      "route": "/latest",
+      "status": 200
+    },
+    {
+      "route": "/category/india",
+      "status": 200
+    },
+    {
+      "route": "/category/states",
+      "status": 200
+    },
+    {
+      "route": "/category/politics",
+      "status": 200
+    },
+    {
+      "route": "/category/economy",
+      "status": 200
+    },
+    {
+      "route": "/category/technology",
+      "status": 200
+    },
+    {
+      "route": "/category/sports",
+      "status": 200
+    },
+    {
+      "route": "/category/entertainment",
+      "status": 200
+    },
+    {
+      "route": "/category/explainers",
+      "status": 200
+    },
+    {
+      "route": "/category/videos",
+      "status": 200
+    },
+    {
+      "route": "/contact",
+      "status": 200
+    },
+    {
+      "route": "/search",
+      "status": 200
+    },
+    {
+      "route": "/visual-stories",
+      "status": 200
+    },
+    {
+      "route": "/visual-stories/bollywood-highest-paid-actors-2024",
+      "status": 200
+    },
+    {
+      "route": "/visual-stories/isro-new-launch-pad-inside-look",
+      "status": 200
+    },
+    {
+      "route": "/visual-stories/5-hidden-iphone-features-guide",
+      "status": 200
+    },
+    {
+      "route": "/article/data-protection-bill-explainer",
+      "status": 200
+    },
+    {
+      "route": "/article/interim-budget-2026-explained",
+      "status": 200
+    },
+    {
+      "route": "/article/neet-pg-2026-changes",
+      "status": 200
+    },
+    {
+      "route": "/article/rural-economy-overhaul",
+      "status": 200
+    },
+    {
+      "route": "/article/ai-regulation-india",
+      "status": 200
+    },
+    {
+      "route": "/article/indian-sports-golden-age",
+      "status": 200
+    },
+    {
+      "route": "/article/coalition-politics-2029",
+      "status": 200
+    },
+    {
+      "route": "/article/stock-market-rally",
+      "status": 200
+    },
+    {
+      "route": "/article/pm-interview-tech",
+      "status": 200
+    },
+    {
+      "route": "/article/maharashtra-drought-report",
+      "status": 200
+    },
+    {
+      "route": "/article/funding-winter-ends",
+      "status": 200
+    },
+    {
+      "route": "/article/ind-vs-aus-highlights",
+      "status": 200
+    }
+  ]
+}
