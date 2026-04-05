@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { auth } from '@/lib/firebase';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { createSession } from '@/lib/actions/auth-actions';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -18,16 +21,36 @@ export default function AdminLoginPage() {
     setLoading(true);
 
     try {
-      // Mock authentication delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+      let userCredential;
       
-      // In mock mode, any email/password pair is accepted
+      if (isSignUp) {
+        userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      } else {
+        userCredential = await signInWithEmailAndPassword(auth, email, password);
+      }
 
-      // Redirect to dashboard after successful login
-      router.push('/admin');
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Authentication failed';
-      setError(errorMessage);
+      const idToken = await userCredential.user.getIdToken();
+      const result = await createSession(idToken);
+
+      if (result.success) {
+        router.push('/admin');
+        router.refresh(); // Ensure layout components see the new cookie
+      } else {
+        throw new Error(result.error || 'Failed to create session');
+      }
+    } catch (err: any) {
+      console.error('[Login] Auth error:', err);
+      let message = 'Authentication failed';
+      
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        message = 'Invalid email or password';
+      } else if (err.code === 'auth/email-already-in-use') {
+        message = 'Email already in use';
+      } else if (err.code === 'auth/weak-password') {
+        message = 'Password should be at least 6 characters';
+      }
+      
+      setError(message);
     } finally {
       setLoading(false);
     }

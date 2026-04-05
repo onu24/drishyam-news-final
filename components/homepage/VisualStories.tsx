@@ -63,8 +63,8 @@ export function VisualStories() {
 
               {/* Story indicator lines at top */}
               <div className="absolute top-2 left-2 right-2 flex gap-1">
-                {stories[0].slides.map((_, i) => (
-                   <div key={i} className="flex-1 h-0.5 bg-white/40 rounded-full"></div>
+                {story.slides.map((_, i) => (
+                  <div key={i} className="flex-1 h-0.5 bg-white/40 rounded-full"></div>
                 ))}
               </div>
               

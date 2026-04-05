@@ -9,7 +9,8 @@ import {
   PlusCircle, 
   PenSquare, 
   FileEdit,
-  Newspaper
+  Newspaper,
+  Info
 } from 'lucide-react';
 
 // Force dynamic or let Next.js cache depending on needs (Revalidating every hour fits CMS)
@@ -85,6 +86,12 @@ export default async function AdminDashboard() {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <Link
+            href="/admin/about"
+            className="px-4 py-2 border border-border text-foreground text-sm font-medium rounded-sm hover:bg-secondary transition-colors inline-flex items-center gap-2"
+          >
+            <Info size={16} /> About
+          </Link>
           <Link
             href="/admin/categories"
             className="px-4 py-2 border border-border text-foreground text-sm font-medium rounded-sm hover:bg-secondary transition-colors inline-flex items-center gap-2"
@@ -201,7 +208,7 @@ export default async function AdminDashboard() {
                         </td>
                         <td className="py-4 px-6 text-right">
                           <Link 
-                            href={`/admin/articles/edit/${article.id}`}
+                            href={`/admin/articles/${article.id}/edit`}
                             className="text-muted-foreground hover:text-primary transition-colors inline-flex p-2"
                             title="Edit Article"
                           >

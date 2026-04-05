@@ -11,7 +11,10 @@ interface ShareButtonsProps {
 export function ShareButtons({ title, url }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false);
 
-  const fullUrl = typeof window !== 'undefined' ? `${window.location.origin}${url}` : url;
+  const siteOrigin =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://drishyam-news.com');
+  const fullUrl = url.startsWith('http') ? url : `${siteOrigin}${url}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(fullUrl);

@@ -63,13 +63,15 @@ export function StoryViewer({ story }: StoryViewerProps) {
   };
 
   const currentSlide = story.slides[currentSlideIndex];
+  const hasVideo = !!currentSlide.video;
+  const backgroundImage = currentSlide.image || story.coverImage;
 
   return (
     <div className="fixed inset-0 z-[100] bg-black flex items-center justify-center overflow-hidden touch-none select-none">
       {/* Background Image (blurred) */}
       <div className="absolute inset-0 opacity-40 blur-2xl scale-110">
          <Image 
-          src={currentSlide.image} 
+          src={backgroundImage} 
           alt="" 
           fill 
           className="object-cover"
@@ -105,7 +107,11 @@ export function StoryViewer({ story }: StoryViewerProps) {
           </div>
           
           <div className="flex items-center gap-3 pointer-events-auto">
-            <button onClick={() => setIsMuted(!isMuted)} className="p-2 bg-black/20 backdrop-blur-md rounded-full text-white hover:bg-black/40 transition-colors">
+            <button
+              onClick={() => setIsMuted(!isMuted)}
+              disabled={!hasVideo}
+              className="p-2 bg-black/20 backdrop-blur-md rounded-full text-white hover:bg-black/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
               {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
             </button>
             <button onClick={handleShare} className="p-2 bg-black/20 backdrop-blur-md rounded-full text-white hover:bg-black/40 transition-colors">
@@ -137,15 +143,29 @@ export function StoryViewer({ story }: StoryViewerProps) {
           />
         </div>
 
-        {/* Main Image */}
+        {/* Main Media */}
         <div className="relative flex-1">
-          <Image 
-            src={currentSlide.image} 
-            alt={currentSlide.title} 
-            fill 
-            className="object-cover"
-            priority
-          />
+          {hasVideo ? (
+            <video
+              key={currentSlide.id}
+              src={currentSlide.video}
+              poster={backgroundImage}
+              className="absolute inset-0 h-full w-full object-cover"
+              autoPlay
+              loop
+              playsInline
+              muted={isMuted}
+              preload="metadata"
+            />
+          ) : (
+            <Image 
+              src={backgroundImage} 
+              alt={currentSlide.title} 
+              fill 
+              className="object-cover"
+              priority
+            />
+          )}
           {/* Bottom Gradient for Text */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
         </div>

@@ -1,102 +1,83 @@
 export type ArticleStatus = 'draft' | 'review' | 'published';
+export type ArticleType = 'standard' | 'opinion' | 'explainer' | 'video';
 
 export interface Category {
   id: string;
   name: string;
   slug: string;
-  order?: number;
   description?: string;
+  order?: number;
+  metaTitle?: string;
+  metaDescription?: string;
 }
 
 export interface Author {
   id: string;
   name: string;
   bio: string;
-  avatarUrl?: string; // Legacy
-  avatar?: string; // Admin style
+  avatar: string; // Unified Avatar
   email?: string;
   role?: string;
+  socialLinks?: {
+    twitter?: string;
+    linkedin?: string;
+  };
 }
 
 export interface Article {
+  // Core Identifiers
   id: string;
   title: string;
   slug: string;
-  excerpt?: string;
-  content?: string;
   
-  // Legacy fields
-  category?: string;
-  headline?: string;
-  date?: number;
-  imageUrl?: string;
-  language?: 'en' | 'hi';
-  isLive?: boolean;
-  isBreaking?: boolean;
-  
-  // New Admin fields
-  categoryId?: string;
-  authorId?: string;
-  status?: ArticleStatus;
-  featured?: boolean;
-  views?: number;
-  createdAt?: string | number; 
-  updatedAt?: string | number;
-  coverImage?: string;
-  tags?: string[];
-  
-  // Editorial additions
-  articleType?: 'standard' | 'opinion' | 'explainer' | 'video';
+  // Content
+  excerpt: string;
+  content: string;
   keyPoints?: string[];
-  videoUrl?: string;
-  readingTime?: number;
+  articleType: ArticleType;
+  
+  // Media
+  coverImage: string; // Unified Image
+  videoUrl?: string; // For type: 'video'
+  
+  // Metadata & Taxonomy
+  categoryId: string;
+  category: string; // Display Name
+  categorySlug: string;
+  authorId: string;
+  tags: string[];
+  status: ArticleStatus;
+  featured: boolean;
+  language: 'en' | 'hi';
+  
+  // Statistics
+  views: number;
+  readingTime: number;
+  
+  // Engagement
+  isBreaking: boolean;
+  isLive: boolean;
+  
+  // Timestamps
+  createdAt: string; 
+  updatedAt: string;
+
+  // SEO Metadata
+  metaTitle?: string;
+  metaDescription?: string;
 }
+
+export interface NewsArticle extends Article {}
 
 export interface DashboardStats {
   totalArticles: number;
+  publishedCount: number;
+  draftCount: number;
+  reviewCount: number;
   featuredArticles: number;
   totalViews: number;
   totalCategories: number;
   totalAuthors: number;
-  publishedCount: number;
-  draftCount: number;
-  reviewCount: number;
-}
-
-// ... other existing types (VideoArticle, ExplainerArticle, etc.) if needed can extend Article
-export interface NewsArticle extends Article {}
-
-export interface ExplainerArticle extends Article {
-  topicTag?: string;
-}
-
-export interface VideoArticle extends Article {
-  videoUrl?: string;
-  duration?: string;
-}
-
-export interface AdPlacement {
-  id: string;
-  position: string;
-  content: string;
-  active: boolean;
-  startDate: number;
-  endDate: number;
-}
-
-export interface User {
-  uid: string;
-  email: string;
-  displayName?: string;
-  photoURL?: string;
-  isAdmin?: boolean;
-}
-
-export interface StorySlide {
-  id: string;
-  title: string;
-  caption: string;
-  image: string;
 }
 
 export interface VisualStory {
@@ -105,6 +86,32 @@ export interface VisualStory {
   slug: string;
   coverImage: string;
   category: string;
-  slides: StorySlide[];
-  createdAt?: string | number;
+  slides: {
+    id: string;
+    title: string;
+    caption: string;
+    image: string;
+    video?: string;
+  }[];
+  createdAt: string;
+}
+
+export interface AboutPageContent {
+  id: string;
+  heroTitle: string;
+  heroSubtitle: string;
+  intro: string;
+  story: string;
+  mission: string;
+  vision: string;
+  values: string[];
+  updatedAt: string;
+}
+
+export interface User {
+  uid: string;
+  email: string;
+  displayName?: string;
+  photoURL?: string;
+  isAdmin?: boolean;
 }

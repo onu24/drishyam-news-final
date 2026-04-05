@@ -1,86 +1,147 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { storage } from '@/lib/firebase';
+import { AlertCircle, CheckCircle2, UploadCloud, X } from 'lucide-react';
 
 interface ImageUploadProps {
   onImageUpload: (url: string) => void;
+  onUploadingChange?: (isUploading: boolean) => void;
   currentImage?: string;
 }
 
-export function ImageUpload({ onImageUpload, currentImage }: ImageUploadProps) {
+export function ImageUpload({ onImageUpload, onUploadingChange, currentImage }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentImage || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Sync internal uploading state to parent component
+  useEffect(() => {
+    onUploadingChange?.(uploading);
+  }, [uploading, onUploadingChange]);
+
+  const clearImage = () => {
+    setPreviewUrl(null);
+    onImageUpload('');
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      setError('Please select an image file');
+    // 1. Production Validation
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!validTypes.includes(file.type)) {
+      setError('Invalid format. Please use JPG, PNG, WebP or GIF.');
       return;
     }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setError('Image must be smaller than 5MB');
+    
+    const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+    if (file.size > MAX_SIZE) {
+      setError(`File is too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Limit is 5MB.`);
       return;
     }
 
     setError(null);
     setUploading(true);
+    setProgress(0);
 
     try {
-      // Create a preview
+      // Create FormData to send over Server Action
+      const formData = new FormData();
+      formData.append('file', file);
+
+      // Fake progress for UX
+      const progressInterval = setInterval(() => {
+         setProgress(p => (p < 90 ? p + 10 : p));
+      }, 300);
+
+      const { uploadImageAction } = await import('@/lib/actions/dashboard-actions');
+      const result = await uploadImageAction(formData);
+
+      clearInterval(progressInterval);
+      setProgress(100);
+
+      if (!result.success || !result.url) {
+         throw new Error(result.error || 'Failed to upload image');
+      }
+
+      setPreviewUrl(result.url);
+      onImageUpload(result.url);
+      setUploading(false);
+      setProgress(0);
+
+    } catch (err) {
+      console.warn('[ImageUpload] Storage Error:', err);
+      setError(`Upload failed: ${err instanceof Error ? err.message : 'Unknown error'}. Falling back to Data URL for development.`);
+      
+      // Fallback (Data URL for localhost/development) if absolutely necessary
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = e => {
         const res = e.target?.result as string;
         setPreviewUrl(res);
-        onImageUpload(res); // Pass the data URL directly as mock uploaded image URL
-        
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
+        onImageUpload(res);
+        setUploading(false);
       };
       reader.readAsDataURL(file);
-    } catch (err) {
-      setError(`Upload failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
-      setPreviewUrl(null);
-    } finally {
-      setUploading(false);
     }
   };
 
   return (
     <div className="space-y-4">
-      <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
+      <div className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-all ${
+        previewUrl ? 'border-emerald-200 bg-emerald-50/10' : 'border-border hover:border-primary/50 bg-secondary/5'
+      }`}>
+        
         {previewUrl ? (
-          <div className="relative w-full h-64 rounded-lg overflow-hidden mb-4">
-            <Image
-              src={previewUrl}
-              alt="Preview"
-              fill
-              className="object-cover"
-            />
+          <div className="relative group">
+            <div className="relative w-full h-72 rounded-lg overflow-hidden border border-border bg-zinc-100">
+               <Image 
+                 src={previewUrl} 
+                 alt="Preview" 
+                 fill 
+                 className="object-cover"
+                 sizes="(max-width: 1024px) 100vw, 800px" 
+               />
+               <div className="absolute top-4 right-4 bg-emerald-500 text-white p-2 rounded-full shadow-lg">
+                  <CheckCircle2 size={16} />
+               </div>
+            </div>
+            <button 
+              onClick={clearImage}
+              type="button"
+              className="absolute -top-3 -right-3 p-1.5 bg-red-500 text-white rounded-full shadow-md hover:bg-red-600 transition-colors"
+            >
+              <X size={14} />
+            </button>
           </div>
         ) : (
-          <div className="mb-4">
-            <svg
-              className="w-12 h-12 mx-auto text-muted-foreground"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+          <div className="py-10 flex flex-col items-center">
+            <div className="w-16 h-16 bg-primary/5 rounded-full flex items-center justify-center mb-4">
+               <UploadCloud className="w-8 h-8 text-primary" />
+            </div>
+            <h4 className="text-sm font-bold text-foreground mb-1">Click to upload cover image</h4>
+            <p className="text-xs text-muted-foreground uppercase tracking-widest font-medium">JPG, PNG, WebP or GIF (max 5MB)</p>
+          </div>
+        )}
+
+        {/* Real-time Progress */}
+        {uploading && (
+          <div className="mt-4 space-y-2">
+            <div className="w-full bg-zinc-200 rounded-full h-2 overflow-hidden">
+              <div
+                className="bg-primary h-2 rounded-full transition-all duration-300 ease-out"
+                style={{ width: `${progress}%` }}
               />
-            </svg>
+            </div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-primary animate-pulse">
+               Uploading... {progress}%
+            </p>
           </div>
         )}
 
@@ -93,22 +154,23 @@ export function ImageUpload({ onImageUpload, currentImage }: ImageUploadProps) {
           className="hidden"
           id="image-input"
         />
-
-        <label
-          htmlFor="image-input"
-          className="inline-block px-6 py-2 bg-primary text-primary-foreground font-medium rounded-sm hover:bg-primary/90 transition-colors cursor-pointer disabled:opacity-50"
-        >
-          {uploading ? 'Uploading...' : previewUrl ? 'Change Image' : 'Upload Image'}
-        </label>
-
-        <p className="text-xs text-muted-foreground mt-2">
-          PNG, JPG or GIF (max. 5MB)
-        </p>
+        
+        {!previewUrl && (
+          <label
+            htmlFor="image-input"
+            className={`mt-4 inline-flex px-8 py-3 bg-primary text-primary-foreground font-black uppercase tracking-tighter rounded-sm hover:bg-black transition-all cursor-pointer shadow-md ${
+              uploading ? 'opacity-50 pointer-events-none' : ''
+            }`}
+          >
+            {uploading ? 'Processing Assets...' : 'Select Cover Image'}
+          </label>
+        )}
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-sm text-sm">
-          {error}
+        <div className="flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-sm text-sm animate-in fade-in slide-in-from-top-1">
+          <AlertCircle size={18} className="flex-shrink-0 mt-0.5" />
+          <p className="font-medium text-left">{error}</p>
         </div>
       )}
     </div>

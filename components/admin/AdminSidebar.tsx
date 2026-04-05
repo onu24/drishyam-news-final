@@ -7,17 +7,31 @@ import {
   LayoutDashboard, 
   FileText, 
   PenSquare, 
+  Clapperboard, 
   Users, 
   Tags, 
   Menu, 
   X,
-  ShieldAlert,
-  Settings
+  ShieldCheck,
+  Settings,
+  Info,
+  LogOut
 } from 'lucide-react';
+import { logout } from '@/lib/actions/auth-actions';
+import { useRouter } from 'next/navigation';
 
 export function AdminSidebar() {
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    await logout();
+    router.push('/admin/login');
+    router.refresh();
+  };
 
   const isActive = (path: string) => {
     if (path === '/admin') return pathname === '/admin';
@@ -31,6 +45,7 @@ export function AdminSidebar() {
         { href: '/admin', label: 'Overview', icon: LayoutDashboard },
         { href: '/admin/articles', label: 'All Articles', icon: FileText },
         { href: '/admin/articles/new', label: 'New Story', icon: PenSquare },
+        { href: '/admin/stories', label: 'Visual Stories', icon: Clapperboard },
       ]
     },
     {
@@ -38,7 +53,8 @@ export function AdminSidebar() {
       items: [
         { href: '/admin/categories', label: 'Categories', icon: Tags },
         { href: '/admin/authors', label: 'Authors', icon: Users },
-        { href: '#', label: 'Settings', icon: Settings }, // Placeholder for future
+        { href: '/admin/about', label: 'About Page', icon: Info },
+        { href: '/admin/categories', label: 'Settings', icon: Settings },
       ]
     }
   ];
@@ -46,12 +62,12 @@ export function AdminSidebar() {
   const SidebarContent = () => (
     <>
       <div className="flex items-center justify-between p-6 border-b border-border/50">
-        <div>
-          <h2 className="font-serif text-2xl font-bold tracking-tight text-primary">Drishyam</h2>
+        <Link href="/admin" className="group block">
+          <h2 className="font-serif text-2xl font-bold tracking-tight text-primary group-hover:text-black transition-colors">Drishyam</h2>
           <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mt-1">
             Newsroom Hub
           </p>
-        </div>
+        </Link>
         {/* Mobile Close Button */}
         <button 
           className="md:hidden p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md"
@@ -72,7 +88,7 @@ export function AdminSidebar() {
                 const active = isActive(item.href);
                 return (
                   <Link
-                    key={item.href}
+                    key={item.label}
                     href={item.href}
                     onClick={() => setIsMobileOpen(false)}
                     className={`flex items-center px-3 py-2.5 rounded-md text-sm font-medium transition-all ${
@@ -94,14 +110,23 @@ export function AdminSidebar() {
         ))}
       </nav>
 
-      <div className="p-6 border-t border-border/50">
-        <div className="flex items-center gap-3 px-3 py-3 rounded-md bg-amber-500/10 text-amber-600 border border-amber-500/20">
-          <ShieldAlert size={18} className="flex-shrink-0" />
+      <div className="p-6 border-t border-border/50 space-y-4">
+        <div className="flex items-center gap-3 px-3 py-3 rounded-md bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+          <ShieldCheck size={18} className="flex-shrink-0" />
           <div className="flex flex-col">
-            <span className="text-xs font-bold uppercase tracking-wider">Security</span>
-            <span className="text-xs font-medium">Open Access Mode</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-black">Security</span>
+            <span className="text-[10px] font-medium">Protected Session</span>
           </div>
         </div>
+
+        <button
+          onClick={handleLogout}
+          disabled={isLoggingOut}
+          className="w-full flex items-center px-3 py-2.5 rounded-md text-sm font-medium text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+        >
+          <LogOut size={18} className="mr-3 flex-shrink-0" />
+          {isLoggingOut ? 'Signing out...' : 'Sign Out'}
+        </button>
       </div>
     </>
   );

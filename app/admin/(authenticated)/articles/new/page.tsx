@@ -16,7 +16,7 @@ export default async function NewArticlePage() {
           ← Back to Articles
         </Link>
         <h1 className="font-serif text-3xl font-bold text-foreground mb-2">Create New Article</h1>
-        <p className="text-muted-foreground">Draft and publish a new story. (Local Mock Mode)</p>
+        <p className="text-muted-foreground">Draft and publish a new story.</p>
       </div>
 
       <ArticleForm availableCategories={categories} availableAuthors={authors} />

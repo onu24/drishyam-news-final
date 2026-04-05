@@ -11,7 +11,7 @@ export function Navbar() {
   
   const { t } = useLanguage();
 
-  const categories = [
+  const [categories, setCategories] = useState([
     { name: t('home'), slug: '/' },
     { name: t('latest'), slug: '/latest' },
     { name: t('india'), slug: '/category/india' },
@@ -21,9 +21,32 @@ export function Navbar() {
     { name: t('technology'), slug: '/category/technology' },
     { name: t('sports'), slug: '/category/sports' },
     { name: t('entertainment'), slug: '/category/entertainment' },
+    { name: t('jobs'), slug: '/category/jobs' },
+    { name: t('exams'), slug: '/category/exams' },
     { name: t('explainers'), slug: '/category/explainers' },
     { name: t('videos'), slug: '/category/videos' },
-  ];
+  ]);
+
+  useEffect(() => {
+    // Dynamic import to avoid loading heavy firebase clients on initial render
+    import('@/lib/data').then(({ getAllCategories }) => {
+      getAllCategories().then((cats) => {
+        if (cats && cats.length > 0) {
+          const dynamicCategories = cats.map(c => ({
+            name: c.name,
+            slug: `/category/${c.slug}`
+          }));
+          
+          setCategories([
+            { name: t('home'), slug: '/' },
+            { name: t('latest'), slug: '/latest' },
+            ...dynamicCategories,
+            { name: t('videos'), slug: '/visual-stories' }
+          ]);
+        }
+      });
+    }).catch(console.error);
+  }, [t]);
 
   return (
     <nav className="border-b border-border bg-background sticky top-[80px] z-30 shadow-sm shadow-black/5 dark:shadow-white/5">

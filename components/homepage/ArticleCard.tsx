@@ -7,52 +7,92 @@ import { useLanguage } from '@/components/providers/LanguageProvider';
 
 interface ArticleCardProps {
   article: NewsArticle;
-  variant?: 'default' | 'featured' | 'compact';
+  variant?: 'default' | 'featured' | 'compact' | 'horizontal';
 }
 
 export function ArticleCard({ article, variant = 'default' }: ArticleCardProps) {
   const { language, t } = useLanguage();
 
-  const formatDate = (timestamp: number | string) => {
-    return new Date(timestamp).toLocaleDateString(language === 'hi' ? 'hi-IN' : 'en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+  if (!article) return null;
+
+  const formatDate = (dateStr: string) => {
+    try {
+      return new Date(dateStr).toLocaleDateString(language === 'hi' ? 'hi-IN' : 'en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
+    } catch (e) {
+      return 'Recently';
+    }
   };
 
-  const title = article.headline || article.title;
+  const title = article.title;
   const description = article.excerpt;
-  const imageUrl = article.imageUrl || article.coverImage;
-  const categoryKey = article.categoryId ? article.categoryId.replace('cat_', '') : 'news';
-  const displayCategory = t(categoryKey) || categoryKey.toUpperCase();
+  const imageUrl = article.coverImage;
+  const displayCategory = article.category || 'News';
 
   if (variant === 'featured') {
     return (
       <Link href={`/article/${article.slug}`} className="group cursor-pointer block">
-        <div className="relative mb-4 overflow-hidden bg-muted h-96 w-full rounded-sm">
+        <div className="relative mb-6 overflow-hidden bg-muted aspect-[16/9] w-full rounded-sm border border-border/50 shadow-sm">
           {imageUrl ? (
             <Image
               src={imageUrl}
-              alt={title || ''}
+              alt={title}
               fill
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              className="object-cover group-hover:scale-[1.02] transition-transform duration-700"
+              priority
             />
           ) : (
-            <div className="w-full h-full bg-secondary" />
+            <div className="w-full h-full bg-secondary/20 flex items-center justify-center font-serif text-muted-foreground italic">
+              Drishyam News Archive
+            </div>
           )}
+          <div className="absolute top-4 left-4">
+            <span className="bg-primary text-white text-[10px] font-bold px-2.5 py-1 uppercase tracking-tighter rounded-sm shadow-xl">
+              {displayCategory}
+            </span>
+          </div>
         </div>
-        <div className="space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-widest text-primary">
-            {displayCategory}
-          </p>
-          <h2 className="font-serif text-3xl leading-tight text-foreground group-hover:text-primary transition-colors">
+        <div className="space-y-4">
+          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold leading-[1.1] text-foreground group-hover:text-primary transition-colors">
             {title}
           </h2>
-          <p className="text-sm text-muted-foreground line-clamp-2">
+          <p className="text-lg text-muted-foreground line-clamp-3 leading-relaxed border-l-2 border-primary/20 pl-4 py-1 italic">
             {description}
           </p>
-          <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{formatDate(article.date || Date.now())}</p>
+          <div className="flex items-center text-[10px] font-bold text-muted-foreground uppercase tracking-widest gap-3">
+             <span>{formatDate(article.createdAt)}</span>
+             <span className="w-1 h-1 bg-border rounded-full" />
+             <span>{Math.ceil(article.content.length / 1000)} min read</span>
+          </div>
+        </div>
+      </Link>
+    );
+  }
+
+  if (variant === 'horizontal') {
+    return (
+      <Link href={`/article/${article.slug}`} className="group cursor-pointer flex gap-4 py-4 first:pt-0">
+        <div className="relative hidden sm:block w-32 h-24 shrink-0 overflow-hidden bg-muted rounded-sm">
+          {imageUrl && (
+            <Image
+              src={imageUrl}
+              alt={title}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+          )}
+        </div>
+        <div className="flex flex-col justify-center">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-1">
+            {displayCategory}
+          </p>
+          <h4 className="font-serif text-base sm:text-lg font-bold leading-snug text-foreground group-hover:text-primary transition-colors line-clamp-2">
+            {title}
+          </h4>
+          <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest mt-2">{formatDate(article.createdAt)}</p>
         </div>
       </Link>
     );
@@ -61,58 +101,55 @@ export function ArticleCard({ article, variant = 'default' }: ArticleCardProps) 
   if (variant === 'compact') {
     return (
       <Link href={`/article/${article.slug}`} className="group cursor-pointer">
-        <div className="relative mb-3 overflow-hidden bg-muted h-32 w-full rounded-sm">
-          {imageUrl ? (
+        <div className="relative mb-3 aspect-[3/2] overflow-hidden bg-muted w-full rounded-sm">
+          {imageUrl && (
             <Image
               src={imageUrl}
-              alt={title || ''}
+              alt={title}
               fill
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
             />
-          ) : (
-            <div className="w-full h-full bg-secondary" />
           )}
         </div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-2">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-1">
           {displayCategory}
         </p>
-        <h3 className="font-serif text-base leading-snug text-foreground group-hover:text-primary transition-colors mb-1">
+        <h3 className="font-serif text-base font-bold leading-snug text-foreground group-hover:text-primary transition-colors mb-2 line-clamp-2">
           {title}
         </h3>
-        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{formatDate(article.date || Date.now())}</p>
+        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">{formatDate(article.createdAt)}</p>
       </Link>
     );
   }
 
   return (
-    <Link href={`/article/${article.slug}`} className="group cursor-pointer block">
-      <div className="relative mb-4 overflow-hidden bg-muted h-48 w-full rounded-sm">
-        {imageUrl ? (
-        <Image
-          src={imageUrl}
-          alt={title || ''}
-          fill
-          className="object-cover group-hover:scale-105 transition-transform duration-300"
-        />
-        ) : (
-          <div className="w-full h-full bg-secondary" />
+    <Link href={`/article/${article.slug}`} className="group cursor-pointer block border-b border-border/50 pb-6 mb-6 last:border-0 last:pb-0 last:mb-0">
+      <div className="relative mb-4 aspect-video overflow-hidden bg-muted w-full rounded-sm">
+        {imageUrl && (
+          <Image
+            src={imageUrl}
+            alt={title}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
+          />
         )}
       </div>
       <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-widest text-primary">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-primary">
           {displayCategory}
         </p>
-        <h3 className="font-serif text-lg sm:text-xl font-bold leading-snug text-foreground group-hover:text-primary transition-colors line-clamp-2">
+        <h3 className="font-serif text-xl sm:text-2xl font-bold leading-tight text-foreground group-hover:text-primary transition-colors line-clamp-3">
           {title}
         </h3>
         {description && (
-          <p className="text-sm text-muted-foreground line-clamp-2">
+          <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
             {description}
           </p>
         )}
-        <p className="text-[11px] text-muted-foreground font-bold uppercase tracking-widest pt-1">{formatDate(article.date || Date.now())}</p>
+        <div className="flex items-center text-[10px] font-bold text-muted-foreground uppercase tracking-widest pt-1 gap-2">
+           <span>{formatDate(article.createdAt)}</span>
+        </div>
       </div>
     </Link>
   );
 }
-

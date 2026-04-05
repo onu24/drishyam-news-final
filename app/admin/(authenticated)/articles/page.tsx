@@ -12,7 +12,7 @@ export default async function ArticlesPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="font-serif text-3xl font-bold text-foreground mb-2">Articles</h1>
-          <p className="text-muted-foreground">Manage your news articles (Mock Data)</p>
+          <p className="text-muted-foreground">Manage and publish your news articles.</p>
         </div>
         <Link
           href="/admin/articles/new"

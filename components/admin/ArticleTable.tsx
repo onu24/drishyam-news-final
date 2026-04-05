@@ -3,7 +3,7 @@
 import { Article } from '@/lib/types';
 import Link from 'next/link';
 import { useState } from 'react';
-import { deleteArticle } from '@/lib/dashboard';
+import { deleteArticleAction } from '@/lib/actions/dashboard-actions';
 import { useRouter } from 'next/navigation';
 
 export function ArticleTable({ initialArticles }: { initialArticles: Article[] }) {
@@ -13,17 +13,17 @@ export function ArticleTable({ initialArticles }: { initialArticles: Article[] }
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.preventDefault();
-    if (confirm('Are you sure you want to delete this article? (Mock implementation)')) {
+    if (confirm('Are you sure you want to permanently delete this article?')) {
       setDeletingId(id);
       try {
-        const success = await deleteArticle(id);
-        if (success) {
+        const success = await deleteArticleAction(id);
+        if (success.success) {
           // Instantly filter out locally for UI responsiveness
           setArticles(prev => prev.filter(a => a.id !== id));
           router.refresh(); // Trigger server refetch in background
         }
       } catch (err) {
-        alert('Failed to delete article mocked response.');
+        alert('Failed to delete article. Please try again.');
       } finally {
         setDeletingId(null);
       }
@@ -68,7 +68,7 @@ export function ArticleTable({ initialArticles }: { initialArticles: Article[] }
               </td>
               <td className="py-4 px-6">
                  <span className="text-muted-foreground text-xs uppercase tracking-wide font-medium bg-secondary/50 px-2 py-1 rounded-sm">
-                   {(article.categoryId || '').replace('cat_', '')}
+                   {article.category || (article.categoryId || '').replace('cat_', '')}
                  </span>
               </td>
               <td className="py-4 px-6 text-center">
