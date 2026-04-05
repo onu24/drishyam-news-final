@@ -122,6 +122,7 @@ export function AdminSidebar() {
         <button
           onClick={handleLogout}
           disabled={isLoggingOut}
+          suppressHydrationWarning
           className="w-full flex items-center px-3 py-2.5 rounded-md text-sm font-medium text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
         >
           <LogOut size={18} className="mr-3 flex-shrink-0" />

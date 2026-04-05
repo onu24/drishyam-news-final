@@ -96,12 +96,14 @@ export function AboutPageForm({ initialContent }: AboutPageFormProps) {
             type="text"
             value={formData.heroTitle}
             onChange={(e) => setFormData((prev) => ({ ...prev, heroTitle: e.target.value }))}
+            suppressHydrationWarning
             className="w-full bg-secondary/30 p-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
             placeholder="Hero title"
           />
           <textarea
             value={formData.heroSubtitle}
             onChange={(e) => setFormData((prev) => ({ ...prev, heroSubtitle: e.target.value }))}
+            suppressHydrationWarning
             className="w-full bg-secondary/30 p-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 min-h-[96px] resize-none"
             placeholder="Hero subtitle"
           />
@@ -113,12 +115,14 @@ export function AboutPageForm({ initialContent }: AboutPageFormProps) {
         <textarea
           value={formData.intro}
           onChange={(e) => setFormData((prev) => ({ ...prev, intro: e.target.value }))}
+          suppressHydrationWarning
           className="w-full bg-secondary/30 p-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 min-h-[96px] resize-none"
           placeholder="Intro paragraph"
         />
         <textarea
           value={formData.story}
           onChange={(e) => setFormData((prev) => ({ ...prev, story: e.target.value }))}
+          suppressHydrationWarning
           className="w-full bg-secondary/30 p-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 min-h-[140px] resize-none"
           placeholder="Our story"
         />
@@ -129,12 +133,14 @@ export function AboutPageForm({ initialContent }: AboutPageFormProps) {
         <textarea
           value={formData.mission}
           onChange={(e) => setFormData((prev) => ({ ...prev, mission: e.target.value }))}
+          suppressHydrationWarning
           className="w-full bg-secondary/30 p-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 min-h-[96px] resize-none"
           placeholder="Mission statement"
         />
         <textarea
           value={formData.vision}
           onChange={(e) => setFormData((prev) => ({ ...prev, vision: e.target.value }))}
+          suppressHydrationWarning
           className="w-full bg-secondary/30 p-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 min-h-[96px] resize-none"
           placeholder="Vision statement"
         />
@@ -146,6 +152,7 @@ export function AboutPageForm({ initialContent }: AboutPageFormProps) {
         <textarea
           value={valuesText}
           onChange={(e) => setValuesText(e.target.value)}
+          suppressHydrationWarning
           className="w-full bg-secondary/30 p-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 min-h-[140px] resize-none"
           placeholder={'Accuracy\nIndependence\nAccountability'}
         />
@@ -155,6 +162,7 @@ export function AboutPageForm({ initialContent }: AboutPageFormProps) {
         <button
           type="submit"
           disabled={loading}
+          suppressHydrationWarning
           className="px-6 py-3 bg-primary text-primary-foreground font-black uppercase tracking-widest rounded-sm hover:bg-black transition-colors disabled:opacity-50 inline-flex items-center gap-2"
         >
           {loading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
