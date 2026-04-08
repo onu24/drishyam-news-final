@@ -22,6 +22,7 @@ import {
 import { db } from './firebase';
 import { NewsArticle, VisualStory, Author, Category, AboutPageContent } from './types';
 import { slugify, FALLBACK_IMAGE } from './utils';
+import { cache } from 'react';
 
 // --------------------------------------------------------------------------
 // Helpers
@@ -127,18 +128,9 @@ function toAboutContent(id: string, data: Record<string, any>): AboutPageContent
   } as AboutPageContent;
 }
 
-/** 
- * Safe fetcher that avoids Composite Index requirements by filtering in memory.
- * Fetches the latest 200 articles by default.
- */
-async function fetchAndFilter(
-  filterFn: (data: any) => boolean, 
-  count: number
-): Promise<NewsArticle[]> {
+const getBaseArticlesPool = cache(async () => {
   try {
-    if (!db) {
-       return [];
-    }
+    if (!db) return [];
     
     // Sort only by createdAt (Single Field Index - automatic)
     const q = query(
@@ -150,18 +142,25 @@ async function fetchAndFilter(
     const snap = await getDocs(q);
     
     // Fallback to mock data if Firestore is empty
-    if (snap.empty) {
-      return [];
-    }
+    if (snap.empty) return [];
 
-    return snap.docs
-      .map(d => toArticle(d.id, d.data()))
-      .filter(filterFn)
-      .slice(0, count);
+    return snap.docs.map(d => toArticle(d.id, d.data()));
   } catch (e) {
-    console.error('[data] fetchAndFilter error:', e);
+    console.error('[data] getBaseArticlesPool error:', e);
     return [];
   }
+});
+
+/** 
+ * Safe fetcher that avoids Composite Index requirements by filtering in memory.
+ * Fetches the latest 200 articles by default.
+ */
+async function fetchAndFilter(
+  filterFn: (data: any) => boolean, 
+  count: number
+): Promise<NewsArticle[]> {
+  const pool = await getBaseArticlesPool();
+  return pool.filter(filterFn).slice(0, count);
 }
 
 // --------------------------------------------------------------------------

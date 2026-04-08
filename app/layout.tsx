@@ -128,8 +128,7 @@ export default function RootLayout({
       <body className="font-sans antialiased min-h-screen bg-background text-foreground tracking-tight" suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="light"
           disableTransitionOnChange
         >
           <LanguageProvider>

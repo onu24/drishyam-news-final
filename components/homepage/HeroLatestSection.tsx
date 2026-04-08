@@ -30,13 +30,14 @@ export function HeroLatestSection({ leadArticle, latestArticles }: HeroLatestSec
               <Link href={`/article/${leadArticle.slug}`} className="cursor-pointer block space-y-6">
                 <div className="relative aspect-[16/9] w-full overflow-hidden rounded-sm bg-zinc-100 shadow-sm border border-zinc-200">
                   {leadArticle.coverImage ? (
-                    <Image
-                      src={leadArticle.coverImage}
-                      alt={leadArticle.title}
-                      fill
-                      className="object-cover group-hover:scale-[1.01] transition-transform duration-1000"
-                      priority
-                    />
+                      <Image
+                        src={leadArticle.coverImage}
+                        alt={leadArticle.title}
+                        fill
+                        className="object-cover group-hover:scale-[1.01] transition-transform duration-1000"
+                        priority
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 66vw"
+                      />
                   ) : (
                     <div className="w-full h-full bg-zinc-200" />
                   )}
