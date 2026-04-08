@@ -1,10 +1,13 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { useLanguage } from '@/components/providers/LanguageProvider';
 
 export function Footer() {
   const { language, t } = useLanguage();
+  const [newsletterEmail, setNewsletterEmail] = useState('');
 
   const currentYear = new Date().getFullYear();
 
@@ -23,10 +26,33 @@ export function Footer() {
     { name: 'About Us', href: '/about' },
     { name: 'Contact Us', href: '/contact' },
     { name: 'Careers', href: '/careers' },
-    { name: 'Privacy Policy', href: '/privacy-policy' },
-    { name: 'Terms of Service', href: '/terms-of-service' },
-    { name: 'Editorial Ethics', href: '/ethics' },
+    { name: 'Privacy Policy', href: '/privacy' },
+    { name: 'Terms of Service', href: '/terms' },
   ];
+
+  const handleSubscribe = () => {
+    const email = newsletterEmail.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!email) {
+      toast.error('Email is required', {
+        description: 'Enter your email address to subscribe.',
+      });
+      return;
+    }
+
+    if (!emailRegex.test(email)) {
+      toast.error('Invalid email', {
+        description: 'Please enter a valid email address.',
+      });
+      return;
+    }
+
+    toast.success('Subscribed successfully', {
+      description: `You are now subscribed with ${email}.`,
+    });
+    setNewsletterEmail('');
+  };
 
   return (
     <footer className="bg-zinc-950 text-white pt-16 pb-8 border-t-8 border-primary">
@@ -107,9 +133,14 @@ export function Footer() {
                <input 
                  type="email" 
                  placeholder="Your email address" 
+                 value={newsletterEmail}
+                 onChange={(e) => setNewsletterEmail(e.target.value)}
                  className="bg-zinc-900 border border-zinc-800 px-4 py-3 text-sm focus:outline-none focus:border-primary transition-colors rounded-sm"
                />
-               <button className="w-full bg-primary py-3 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-all">
+               <button
+                 onClick={handleSubscribe}
+                 className="w-full bg-primary py-3 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-all"
+               >
                   Subscribe for Free
                </button>
             </div>
@@ -127,8 +158,6 @@ export function Footer() {
           </p>
           <div className="flex items-center gap-8 text-[10px] uppercase font-bold tracking-[0.2em] text-zinc-500">
              <span>Made in India</span>
-             <span className="w-1 h-1 bg-zinc-800 rounded-full" />
-             <Link href="/rss" className="hover:text-primary transition-colors">RSS Feed</Link>
           </div>
         </div>
       </div>

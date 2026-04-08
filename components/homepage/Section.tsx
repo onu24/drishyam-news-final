@@ -27,20 +27,7 @@ export function SectionBlock({
   const { language } = useLanguage();
 
   if (!articles || articles.length === 0) {
-    return (
-      <section className="bg-background border-b border-border/40 py-10 opacity-60">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-8 pb-3 border-b-2 border-foreground/5 relative">
-            <h2 className="font-bold text-2xl uppercase tracking-tighter text-foreground font-serif italic">
-               {category || title}
-            </h2>
-          </div>
-          <div className="h-40 border-2 border-dashed border-muted rounded-sm flex items-center justify-center text-sm font-medium text-muted-foreground uppercase tracking-widest italic">
-             Updating {category || title} feed...
-          </div>
-        </div>
-      </section>
-    );
+    return null;
   }
 
   const sectionSlug = slug || category || 'news';

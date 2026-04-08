@@ -32,6 +32,14 @@ function toArticle(id: string, data: Record<string, any>): NewsArticle {
   const title = data.title || 'Untitled Story';
   const category = data.category || 'News';
   const categorySlug = data.categorySlug || slugify(category);
+  const contentFont = ['serif', 'sans', 'mono', 'roboto', 'poppins', 'merriweather', 'playfair'].includes(
+    data.contentFont
+  )
+    ? data.contentFont
+    : 'serif';
+  const galleryImages = Array.isArray(data.galleryImages)
+    ? data.galleryImages.map((img: any) => String(img)).filter(Boolean)
+    : [];
   
   return {
     id,
@@ -39,10 +47,12 @@ function toArticle(id: string, data: Record<string, any>): NewsArticle {
     slug: data.slug || slugify(title),
     excerpt: data.excerpt || '',
     content: data.content || '',
+    contentFont,
     category,
     categoryId: data.categoryId || '',
     categorySlug,
     coverImage: data.coverImage || FALLBACK_IMAGE,
+    galleryImages,
     imageUrl: data.coverImage || FALLBACK_IMAGE, 
     authorId: data.authorId || 'drishyam-editorial',
     status: data.status || 'published',
@@ -97,6 +107,7 @@ function toAboutContent(id: string, data: Record<string, any>): AboutPageContent
     heroSubtitle:
       data.heroSubtitle ||
       'Independent journalism for a modern India. We deliver facts, context, and clarity.',
+    profileImage: data.profileImage || '/placeholder-user.jpg',
     intro:
       data.intro ||
       'Drishyam News is a digital newsroom focused on truth-first reporting and in-depth public-interest journalism.',
@@ -320,15 +331,92 @@ export async function getAboutPageContent(): Promise<AboutPageContent> {
   }
 }
 
-export async function searchArticles(queryStr: string): Promise<NewsArticle[]> {
-  const term = queryStr.toLowerCase().trim();
-  if (!term) return [];
-  // For search, we always use memory-based search on the buffer
-  const pool = await fetchAndFilter(a => true, 200);
+function normalizeSearchText(value: string): string {
+  return value
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
 
-  return pool.filter(a => 
-    a.title?.toLowerCase().includes(term) || 
-    a.excerpt?.toLowerCase().includes(term) ||
-    a.tags?.some(t => t.toLowerCase().includes(term))
-  );
+function buildSearchIndex(article: NewsArticle) {
+  const title = normalizeSearchText(article.title || '');
+  const slug = normalizeSearchText(article.slug || '');
+  const excerpt = normalizeSearchText(article.excerpt || '');
+  const content = normalizeSearchText(article.content || '');
+  const tags = normalizeSearchText((article.tags || []).join(' '));
+  const category = normalizeSearchText(article.category || article.categorySlug || '');
+  const meta = normalizeSearchText(`${article.metaTitle || ''} ${article.metaDescription || ''}`);
+  const combined = `${title} ${slug} ${excerpt} ${content} ${tags} ${category} ${meta}`.trim();
+
+  return { title, slug, excerpt, content, tags, category, meta, combined };
+}
+
+export async function searchArticles(queryStr: string): Promise<NewsArticle[]> {
+  const term = normalizeSearchText(queryStr || '');
+  if (!term) return [];
+
+  const tokens = term.split(' ').filter(Boolean);
+
+  // For search, we always use memory-based search on the buffer
+  const pool = await fetchAndFilter((a) => a.status === 'published', 250);
+
+  return pool
+    .map((article) => {
+      const index = buildSearchIndex(article);
+      let score = 0;
+
+      const phraseInTitle = index.title.includes(term);
+      const phraseInSlug = index.slug.includes(term);
+      const phraseInExcerpt = index.excerpt.includes(term);
+      const phraseInTags = index.tags.includes(term);
+      const phraseInCategory = index.category.includes(term);
+      const phraseInContent = index.content.includes(term);
+
+      if (phraseInTitle) score += 120;
+      if (phraseInSlug) score += 80;
+      if (phraseInExcerpt) score += 45;
+      if (phraseInTags) score += 35;
+      if (phraseInCategory) score += 25;
+      if (phraseInContent) score += 10;
+
+      let matchedTokens = 0;
+      for (const token of tokens) {
+        const inTitle = index.title.includes(token);
+        const inSlug = index.slug.includes(token);
+        const inExcerpt = index.excerpt.includes(token);
+        const inTags = index.tags.includes(token);
+        const inCategory = index.category.includes(token);
+        const inContent = index.content.includes(token);
+
+        if (inTitle) score += index.title.startsWith(token) ? 18 : 12;
+        if (inSlug) score += 12;
+        if (inExcerpt) score += 8;
+        if (inTags) score += 7;
+        if (inCategory) score += 6;
+        if (inContent) score += 2;
+
+        if (inTitle || inSlug || inExcerpt || inTags || inCategory || inContent) {
+          matchedTokens += 1;
+        }
+      }
+
+      const singleTokenMatch = tokens.length === 1 && matchedTokens >= 1;
+      const multiTokenStrictMatch = tokens.length > 1 && matchedTokens === tokens.length;
+      const hasPhraseMatch =
+        phraseInTitle || phraseInSlug || phraseInExcerpt || phraseInTags || phraseInCategory || phraseInContent;
+      const shouldInclude = hasPhraseMatch || singleTokenMatch || multiTokenStrictMatch;
+
+      return { article, score, shouldInclude };
+    })
+    .filter((item) => item.shouldInclude)
+    .sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      const bTime = new Date(b.article.updatedAt || b.article.createdAt || 0).getTime();
+      const aTime = new Date(a.article.updatedAt || a.article.createdAt || 0).getTime();
+      return bTime - aTime;
+    })
+    .map((item) => item.article);
 }

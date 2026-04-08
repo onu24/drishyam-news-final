@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AboutPageContent } from '@/lib/types';
 import { updateAboutPageContentAction } from '@/lib/actions/dashboard-actions';
+import { AvatarUpload } from '@/components/admin/AvatarUpload';
 import { AlertCircle, CheckCircle2, Loader2, Save } from 'lucide-react';
 
 interface AboutPageFormProps {
@@ -14,12 +15,14 @@ export function AboutPageForm({ initialContent }: AboutPageFormProps) {
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
+  const [isUploadingProfileImage, setIsUploadingProfileImage] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [valuesText, setValuesText] = useState(initialContent.values.join('\n'));
   const [formData, setFormData] = useState({
     heroTitle: initialContent.heroTitle || '',
     heroSubtitle: initialContent.heroSubtitle || '',
+    profileImage: initialContent.profileImage || '',
     intro: initialContent.intro || '',
     story: initialContent.story || '',
     mission: initialContent.mission || '',
@@ -43,12 +46,17 @@ export function AboutPageForm({ initialContent }: AboutPageFormProps) {
       setError('Hero title is required.');
       return;
     }
+    if (isUploadingProfileImage) {
+      setError('Please wait for the image upload to finish.');
+      return;
+    }
 
     setLoading(true);
     try {
       const result = await updateAboutPageContentAction({
         heroTitle: formData.heroTitle.trim(),
         heroSubtitle: formData.heroSubtitle.trim(),
+        profileImage: formData.profileImage.trim() || '/placeholder-user.jpg',
         intro: formData.intro.trim(),
         story: formData.story.trim(),
         mission: formData.mission.trim(),
@@ -92,6 +100,18 @@ export function AboutPageForm({ initialContent }: AboutPageFormProps) {
       <div className="bg-background border border-border rounded-xl p-6 space-y-5 shadow-sm">
         <h2 className="font-serif text-2xl font-bold">Hero Section</h2>
         <div className="grid grid-cols-1 gap-4">
+          <div>
+            <p className="text-sm text-muted-foreground mb-3">About page profile image (WhatsApp DP style)</p>
+            <AvatarUpload
+              currentAvatar={formData.profileImage}
+              onAvatarUpload={(url) => setFormData((prev) => ({ ...prev, profileImage: url }))}
+              onUploadingChange={setIsUploadingProfileImage}
+              folder="site/about"
+              inputId="about-profile-image-input"
+              buttonLabel="Upload Profile Image"
+              alt="About page profile image"
+            />
+          </div>
           <input
             type="text"
             value={formData.heroTitle}
@@ -161,7 +181,7 @@ export function AboutPageForm({ initialContent }: AboutPageFormProps) {
       <div className="sticky bottom-0 bg-background/80 backdrop-blur-md border border-border rounded-lg p-4">
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || isUploadingProfileImage}
           suppressHydrationWarning
           className="px-6 py-3 bg-primary text-primary-foreground font-black uppercase tracking-widest rounded-sm hover:bg-black transition-colors disabled:opacity-50 inline-flex items-center gap-2"
         >

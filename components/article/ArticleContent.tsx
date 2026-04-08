@@ -1,16 +1,29 @@
 import { CheckCircle2 } from 'lucide-react';
+import { ArticleContentFont } from '@/lib/types';
 
 interface ArticleContentProps {
   content?: string;
   keyPoints?: string[];
   articleType?: string;
+  contentFont?: ArticleContentFont;
 }
 
-export function ArticleContent({ content, keyPoints, articleType }: ArticleContentProps) {
+const FONT_CLASS_MAP: Record<ArticleContentFont, string> = {
+  serif: 'font-serif',
+  sans: 'font-sans',
+  mono: 'font-mono',
+  roboto: 'font-roboto',
+  poppins: 'font-poppins',
+  merriweather: 'font-merriweather',
+  playfair: 'font-playfair',
+};
+
+export function ArticleContent({ content, keyPoints, articleType, contentFont = 'serif' }: ArticleContentProps) {
   if (!content && !keyPoints) return null;
 
   // Parse markdown-like content (simple paragraphs separated by double newlines)
   const paragraphs = content?.split('\n\n').filter(p => p.trim()) || [];
+  const fontClass = FONT_CLASS_MAP[contentFont] || FONT_CLASS_MAP.serif;
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -44,7 +57,7 @@ export function ArticleContent({ content, keyPoints, articleType }: ArticleConte
                 const HeadingTag = `h${Math.min(level + 2, 6)}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
                 
                 return (
-                  <HeadingTag key={index} className="mt-12 mb-6 font-serif font-bold text-foreground tracking-tight">
+                  <HeadingTag key={index} className={`mt-12 mb-6 ${fontClass} font-bold text-foreground tracking-tight`}>
                     {text}
                   </HeadingTag>
                 );
@@ -55,7 +68,7 @@ export function ArticleContent({ content, keyPoints, articleType }: ArticleConte
           if (paragraph.startsWith('>')) {
             const text = paragraph.replace(/^>\s/, '');
             return (
-              <blockquote key={index} className="border-l-4 border-primary pl-6 py-2 my-10 italic text-2xl font-serif text-muted-foreground leading-relaxed">
+              <blockquote key={index} className={`border-l-4 border-primary pl-6 py-2 my-10 italic text-2xl ${fontClass} text-muted-foreground leading-relaxed`}>
                 {text}
               </blockquote>
             );
@@ -63,7 +76,7 @@ export function ArticleContent({ content, keyPoints, articleType }: ArticleConte
 
           // Regular paragraph
           return (
-            <p key={index} className="text-xl leading-relaxed text-foreground/90 mb-8 font-serif selection:bg-primary/20">
+            <p key={index} className={`text-xl leading-relaxed text-foreground/90 mb-8 ${fontClass} selection:bg-primary/20`}>
               {paragraph}
             </p>
           );

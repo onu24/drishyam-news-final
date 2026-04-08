@@ -5,6 +5,7 @@ import { ArticleHeader } from '@/components/article/ArticleHeader';
 import { ArticleContent } from '@/components/article/ArticleContent';
 import { ArticleSidebar } from '@/components/article/ArticleSidebar';
 import { ShareButtons } from '@/components/article/ShareButtons';
+import { ArticleImageGallery } from '@/components/article/ArticleImageGallery';
 import { getArticleBySlug, getAuthorById, getArticlesByCategory, getLatestArticles } from '@/lib/data';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -16,6 +17,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const article = await getArticleBySlug(slug);
   if (!article) return { title: 'Article Not Found' };
+  const galleryImages = Array.isArray(article.galleryImages) ? article.galleryImages.filter(Boolean) : [];
+  const ogImages = Array.from(new Set([article.coverImage, ...galleryImages].filter(Boolean)));
 
   return {
     title: `${article.title} | Drishyam News`,
@@ -23,7 +26,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     openGraph: {
       title: article.title,
       description: article.excerpt,
-      images: article.coverImage ? [article.coverImage] : [],
+      images: ogImages,
     },
   };
 }
@@ -43,13 +46,15 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   ]);
 
   const filteredRelated = relatedArticles.filter(a => a.id !== article.id).slice(0, 3);
+  const galleryImages = Array.isArray(article.galleryImages) ? article.galleryImages.filter(Boolean) : [];
+  const schemaImages = Array.from(new Set([article.coverImage, ...galleryImages].filter(Boolean)));
 
   // JSON-LD Structured Data
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'NewsArticle',
     headline: article.title,
-    image: [article.coverImage || article.imageUrl || ''],
+    image: schemaImages,
     datePublished: article.createdAt,
     dateModified: article.updatedAt || article.createdAt,
     author: [
@@ -97,7 +102,12 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                 content={article.content}
                 keyPoints={article.keyPoints}
                 articleType={article.articleType}
+                contentFont={article.contentFont}
               />
+
+              {galleryImages.length > 0 && (
+                <ArticleImageGallery images={galleryImages} title={article.title} />
+              )}
 
               <ShareButtons title={article.title} url={`/article/${slug}`} />
 

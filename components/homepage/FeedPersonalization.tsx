@@ -3,6 +3,7 @@
 import { Settings2, Check } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 const TOPICS = [
   { label: 'National', slug: 'india' },
@@ -46,6 +47,13 @@ export function FeedPersonalization() {
   };
 
   const savePreferences = () => {
+    if (selectedSlugs.length === 0) {
+      toast.info('No topics selected', {
+        description: 'Choose at least one topic before saving your feed preferences.',
+      });
+      return;
+    }
+
     // Save to cookie (valid for 30 days)
     const expiry = new Date();
     expiry.setDate(expiry.getDate() + 30);
@@ -53,6 +61,10 @@ export function FeedPersonalization() {
     document.cookie = `drishyam_user_prefs=${encodeURIComponent(JSON.stringify(selectedSlugs))}; path=/; expires=${expiry.toUTCString()}; SameSite=Lax`;
     
     setIsSaved(true);
+
+    toast.success('Preferences saved', {
+      description: `Your feed is updated for ${selectedSlugs.length} selected topic${selectedSlugs.length > 1 ? 's' : ''}.`,
+    });
     
     // Refresh the page data (Server Components will pick up the new cookie)
     router.refresh();
@@ -72,14 +84,14 @@ export function FeedPersonalization() {
           Choose topics that matter to you. Your homepage will adapt.
         </p>
 
-        <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
+        <div className="flex flex-wrap justify-center gap-x-3 gap-y-3 sm:gap-x-4 sm:gap-y-4 mb-7">
           {TOPICS.map((topic) => {
             const isActive = selectedSlugs.includes(topic.slug);
             return (
               <button
                 key={topic.slug}
                 onClick={() => toggleTopic(topic.slug)}
-                className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 ${
+                className={`px-5 sm:px-6 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 ${
                   isActive
                     ? 'bg-primary text-primary-foreground shadow-md scale-105 border-primary'
                     : 'bg-background border border-border text-foreground hover:border-primary/50 hover:text-primary'
@@ -91,11 +103,11 @@ export function FeedPersonalization() {
           })}
         </div>
         
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="mt-2 flex flex-col items-center justify-center gap-3">
             <button 
               onClick={savePreferences}
               disabled={isSaved}
-              className={`min-w-[180px] font-bold text-xs uppercase tracking-widest px-8 py-3 rounded-sm transition-all flex items-center justify-center ${
+              className={`min-w-[220px] font-bold text-xs uppercase tracking-[0.14em] px-8 py-3 rounded-sm transition-all flex items-center justify-center ${
                 isSaved 
                   ? 'bg-green-600 text-white cursor-default' 
                   : 'bg-foreground text-background hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0'
@@ -117,9 +129,12 @@ export function FeedPersonalization() {
                   setSelectedSlugs([]);
                   document.cookie = 'drishyam_user_prefs=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
                   setIsSaved(false);
+                  toast.success('Feed reset', {
+                    description: 'You are back to the default homepage feed.',
+                  });
                   router.refresh();
                 }}
-                className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors underline underline-offset-4"
+                className="mt-1 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground hover:text-primary transition-colors underline underline-offset-4"
               >
                 Reset to default feed
               </button>

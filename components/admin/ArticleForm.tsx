@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { Article, Category, Author, ArticleStatus } from '@/lib/types';
+import { Article, Category, Author, ArticleStatus, ArticleContentFont } from '@/lib/types';
 import { createArticleAction, updateArticleAction } from '@/lib/actions/dashboard-actions';
 import { ImageUpload } from './ImageUpload';
 import { useRouter } from 'next/navigation';
 import { slugify } from '@/lib/utils';
+import Image from 'next/image';
 import { 
   AlertCircle, 
   CheckCircle2, 
@@ -18,7 +19,9 @@ import {
   X,
   PlusCircle,
   FileText,
-  CloudUpload
+  CloudUpload,
+  Images,
+  Trash2
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -30,12 +33,23 @@ interface ArticleFormProps {
 
 export function ArticleForm({ article, availableCategories = [], availableAuthors = [] }: ArticleFormProps) {
   const router = useRouter();
+  const fontOptions: { value: ArticleContentFont; label: string }[] = [
+    { value: 'serif', label: 'Serif (Editorial)' },
+    { value: 'sans', label: 'Sans (Modern)' },
+    { value: 'mono', label: 'Mono (Technical)' },
+    { value: 'roboto', label: 'Roboto' },
+    { value: 'poppins', label: 'Poppins' },
+    { value: 'merriweather', label: 'Merriweather' },
+    { value: 'playfair', label: 'Playfair Display' },
+  ];
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<boolean>(false);
   const [coverImage, setCoverImage] = useState(article?.coverImage || '');
+  const [galleryImages, setGalleryImages] = useState<string[]>(article?.galleryImages?.filter(Boolean) || []);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isUploadingGalleryImages, setIsUploadingGalleryImages] = useState(false);
 
   const [formData, setFormData] = useState({
     title: article?.title || '',
@@ -43,6 +57,7 @@ export function ArticleForm({ article, availableCategories = [], availableAuthor
     authorId: article?.authorId || '',
     excerpt: article?.excerpt || '',
     content: article?.content || '',
+    contentFont: (article?.contentFont || 'serif') as ArticleContentFont,
     status: (article?.status || 'draft') as ArticleStatus,
     featured: article?.featured || false,
     articleType: (article?.articleType || 'standard') as Article['articleType'],
@@ -74,12 +89,69 @@ export function ArticleForm({ article, availableCategories = [], availableAuthor
     return Object.keys(errors).length === 0;
   };
 
+  const handleRemoveGalleryImage = (index: number) => {
+    setGalleryImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleGalleryUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+
+    setIsUploadingGalleryImages(true);
+    setError(null);
+
+    const uploadedUrls: string[] = [];
+    const failedFiles: string[] = [];
+
+    try {
+      for (const file of Array.from(files)) {
+        const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        if (!validTypes.includes(file.type)) {
+          failedFiles.push(`${file.name} (invalid format)`);
+          continue;
+        }
+
+        const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+        if (file.size > MAX_SIZE) {
+          failedFiles.push(`${file.name} (too large)`);
+          continue;
+        }
+
+        try {
+          const uploadBody = new FormData();
+          uploadBody.append('file', file);
+          uploadBody.append('folder', 'articles/gallery');
+
+          const { uploadImageAction } = await import('@/lib/actions/dashboard-actions');
+          const result = await uploadImageAction(uploadBody);
+
+          if (!result.success || !result.url) {
+            throw new Error(result.error || 'Upload failed');
+          }
+
+          uploadedUrls.push(result.url);
+        } catch {
+          failedFiles.push(file.name);
+        }
+      }
+
+      if (uploadedUrls.length > 0) {
+        setGalleryImages((prev) => Array.from(new Set([...prev, ...uploadedUrls])));
+      }
+
+      if (failedFiles.length > 0) {
+        setError(`Some gallery images failed to upload: ${failedFiles.join(', ')}`);
+      }
+    } finally {
+      setIsUploadingGalleryImages(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
     // 1. Client-side Validation (Workflow Guards)
-    if (isUploadingImage) return; // Prevent double-submit while uploader is busy
+    if (isUploadingImage || isUploadingGalleryImages) return; // Prevent double-submit while uploader is busy
     
     if (!validateForm()) {
       setError('Please resolve the highlighted validation errors before publishing.');
@@ -108,11 +180,13 @@ export function ArticleForm({ article, availableCategories = [], availableAuthor
         categorySlug: selectedCategory?.slug || 'uncategorized',
         authorId: formData.authorId,
         readingTime: Math.ceil(formData.content.length / 500) || 1,
+        contentFont: formData.contentFont,
         status: formData.status,
         featured: formData.featured,
         articleType: formData.articleType,
         tags: tagsArray,
         coverImage: coverImage,
+        galleryImages: galleryImages.filter(Boolean),
         language: formData.language as 'en' | 'hi',
         isBreaking: formData.isBreaking,
         isLive: formData.isLive,
@@ -215,6 +289,60 @@ export function ArticleForm({ article, availableCategories = [], availableAuthor
                 onUploadingChange={setIsUploadingImage}
                 currentImage={coverImage} 
               />
+
+              <div className="mt-6 pt-6 border-t border-border/60 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-[11px] font-black uppercase tracking-widest text-foreground/80 flex items-center gap-2">
+                      <Images size={14} />
+                      Article Gallery (Multiple Images)
+                    </h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Upload extra photos for this article. On mobile these will show as swipe slides.
+                    </p>
+                  </div>
+                  <label className="inline-flex items-center gap-2 px-3 py-2 border border-border rounded-md text-[11px] font-bold uppercase tracking-wider cursor-pointer hover:bg-secondary transition-colors">
+                    {isUploadingGalleryImages ? 'Uploading...' : 'Upload Images'}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      disabled={isUploadingGalleryImages}
+                      onChange={(e) => {
+                        handleGalleryUpload(e.target.files);
+                        e.target.value = '';
+                      }}
+                    />
+                  </label>
+                </div>
+
+                {galleryImages.length > 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {galleryImages.map((img, index) => (
+                      <div key={`${img}-${index}`} className="relative rounded-md overflow-hidden border border-border bg-secondary/20">
+                        <div className="relative w-full aspect-[4/3]">
+                          <Image
+                            src={img}
+                            alt={`Gallery image ${index + 1}`}
+                            fill
+                            sizes="(max-width: 768px) 50vw, 240px"
+                            className="object-cover"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveGalleryImage(index)}
+                          className="absolute top-2 right-2 p-1.5 bg-black/70 text-white rounded-full hover:bg-red-600 transition-colors"
+                          aria-label="Remove gallery image"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -340,6 +468,28 @@ export function ArticleForm({ article, availableCategories = [], availableAuthor
                     <option value="published">🚀 Publish Live</option>
                   </select>
                </div>
+
+               <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">
+                    Content Font
+                  </label>
+                  <select
+                    className="w-full p-3 bg-secondary/30 border border-border rounded-lg focus:ring-2 focus:ring-primary text-sm font-bold"
+                    value={formData.contentFont}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        contentFont: e.target.value as ArticleContentFont,
+                      })
+                    }
+                  >
+                    {fontOptions.map((font) => (
+                      <option key={font.value} value={font.value}>
+                        {font.label}
+                      </option>
+                    ))}
+                  </select>
+               </div>
             </div>
 
             <hr className="border-border/50" />
@@ -381,7 +531,7 @@ export function ArticleForm({ article, availableCategories = [], availableAuthor
             </div>
 
             <div className="pt-2">
-               {isUploadingImage && (
+               {(isUploadingImage || isUploadingGalleryImages) && (
                  <div className="flex items-center gap-2 mb-4 bg-primary/5 p-3 rounded-lg border border-primary/20 animate-pulse">
                     <CloudUpload className="text-primary animate-bounce" size={16} />
                     <span className="text-[10px] font-black uppercase tracking-widest text-primary">Awaiting Media Asset...</span>
@@ -389,7 +539,7 @@ export function ArticleForm({ article, availableCategories = [], availableAuthor
                )}
                <button 
                 type="submit" 
-                disabled={loading || success || isUploadingImage}
+                disabled={loading || success || isUploadingImage || isUploadingGalleryImages}
                 className="w-full py-4 bg-black text-white font-black uppercase tracking-[0.2em] rounded-lg shadow-xl hover:bg-primary transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed group"
               >
                 {loading ? (
@@ -402,7 +552,7 @@ export function ArticleForm({ article, availableCategories = [], availableAuthor
                     <CheckCircle2 size={20} />
                     Redircting
                   </>
-                ) : isUploadingImage ? (
+                ) : (isUploadingImage || isUploadingGalleryImages) ? (
                   <>
                     <Loader2 className="animate-spin" size={20} />
                     Uploading...

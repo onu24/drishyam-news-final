@@ -8,11 +8,23 @@ interface AvatarUploadProps {
   onAvatarUpload: (url: string) => void;
   onUploadingChange?: (isUploading: boolean) => void;
   currentAvatar?: string;
+  folder?: string;
+  inputId?: string;
+  buttonLabel?: string;
+  alt?: string;
 }
 
-const DEFAULT_AVATAR = '/images/placeholders/avatar-placeholder.jpg';
+const DEFAULT_AVATAR = '/placeholder-user.jpg';
 
-export function AvatarUpload({ onAvatarUpload, onUploadingChange, currentAvatar }: AvatarUploadProps) {
+export function AvatarUpload({
+  onAvatarUpload,
+  onUploadingChange,
+  currentAvatar,
+  folder = 'authors',
+  inputId = 'avatar-upload-input',
+  buttonLabel = 'Upload Avatar',
+  alt = 'Avatar preview',
+}: AvatarUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -56,7 +68,7 @@ export function AvatarUpload({ onAvatarUpload, onUploadingChange, currentAvatar 
     try {
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('folder', 'authors');
+      formData.append('folder', folder);
 
       const progressInterval = setInterval(() => {
         setProgress((p) => (p < 90 ? p + 10 : p));
@@ -90,7 +102,7 @@ export function AvatarUpload({ onAvatarUpload, onUploadingChange, currentAvatar 
         <div className="relative h-24 w-24 rounded-full overflow-hidden border-2 border-border bg-secondary/40">
           <Image
             src={previewUrl}
-            alt="Author avatar preview"
+            alt={alt}
             fill
             sizes="96px"
             className="object-cover"
@@ -120,16 +132,16 @@ export function AvatarUpload({ onAvatarUpload, onUploadingChange, currentAvatar 
             onChange={handleFileSelect}
             disabled={uploading}
             className="hidden"
-            id="author-avatar-input"
+            id={inputId}
           />
           <label
-            htmlFor="author-avatar-input"
+            htmlFor={inputId}
             className={`inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground font-bold uppercase tracking-wide text-xs rounded-sm hover:bg-black transition-colors cursor-pointer ${
               uploading ? 'opacity-50 pointer-events-none' : ''
             }`}
           >
             <Camera size={14} />
-            {uploading ? 'Uploading...' : 'Upload Avatar'}
+            {uploading ? 'Uploading...' : buttonLabel}
           </label>
           <p className="text-[11px] text-muted-foreground">JPG, PNG, WebP or GIF. Max 3MB.</p>
         </div>

@@ -1,8 +1,17 @@
+'use client';
+
 import Link from 'next/link';
 import { Search, Bell } from 'lucide-react';
 import { SearchInput } from './SearchInput';
+import { toast } from 'sonner';
 
 export function Header() {
+  const handleNotificationsClick = () => {
+    toast.info('Notifications coming soon', {
+      description: 'We will alert you when breaking stories and updates are available.',
+    });
+  };
+
   return (
     <header className="bg-background sticky top-0 z-40 border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -29,7 +38,11 @@ export function Header() {
             <button aria-label="Search" className="md:hidden text-foreground hover:text-primary transition-colors p-2">
               <Search className="h-5 w-5" />
             </button>
-            <button aria-label="Notifications" className="text-foreground hover:text-primary transition-colors p-2 relative">
+            <button
+              aria-label="Notifications"
+              onClick={handleNotificationsClick}
+              className="text-foreground hover:text-primary transition-colors p-2 relative"
+            >
               <Bell className="h-5 w-5" />
               <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary ring-2 ring-background"></span>
             </button>

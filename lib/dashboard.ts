@@ -19,6 +19,14 @@ function toArticle(id: string, data: any): Article {
   const title = data.title || 'Untitled Story';
   const category = data.category || 'News';
   const categorySlug = data.categorySlug || slugify(category);
+  const contentFont = ['serif', 'sans', 'mono', 'roboto', 'poppins', 'merriweather', 'playfair'].includes(
+    data.contentFont
+  )
+    ? data.contentFont
+    : 'serif';
+  const galleryImages = Array.isArray(data.galleryImages)
+    ? data.galleryImages.map((img: any) => String(img)).filter(Boolean)
+    : [];
 
   return {
     id,
@@ -26,10 +34,12 @@ function toArticle(id: string, data: any): Article {
     slug: data.slug || slugify(title),
     excerpt: data.excerpt || '',
     content: data.content || '',
+    contentFont,
     categoryId: data.categoryId || '',
     category,
     categorySlug,
     coverImage: data.coverImage || FALLBACK_IMAGE,
+    galleryImages,
     imageUrl: data.coverImage || FALLBACK_IMAGE,
     authorId: data.authorId || 'drishyam-editorial',
     status: (data.status || 'published') as ArticleStatus,
@@ -78,6 +88,7 @@ function toAboutContent(id: string, data: any): AboutPageContent {
     heroSubtitle:
       data.heroSubtitle ||
       'Independent journalism for a modern India. We deliver facts, context, and clarity.',
+    profileImage: data.profileImage || '/placeholder-user.jpg',
     intro:
       data.intro ||
       'Drishyam News is a digital newsroom focused on truth-first reporting and in-depth public-interest journalism.',

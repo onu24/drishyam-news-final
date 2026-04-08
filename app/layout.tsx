@@ -1,14 +1,36 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono, Lora, Noto_Sans_Devanagari } from 'next/font/google'
+import {
+  Geist,
+  Geist_Mono,
+  Lora,
+  Noto_Sans_Devanagari,
+  Roboto,
+  Poppins,
+  Merriweather,
+  Playfair_Display,
+} from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import Script from 'next/script'
 import { ThemeProvider } from '@/components/theme-provider'
+import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"], variable: '--font-sans' });
 const _geistMono = Geist_Mono({ subsets: ["latin"], variable: '--font-mono' });
 const _lora = Lora({ subsets: ["latin"], variable: '--font-serif' });
 const _noto = Noto_Sans_Devanagari({ weight: ['400', '500', '600', '700'], subsets: ["devanagari"], variable: '--font-hindi' });
+const _roboto = Roboto({ weight: ['400', '500', '700'], subsets: ['latin'], variable: '--font-roboto' });
+const _poppins = Poppins({ weight: ['400', '500', '600', '700'], subsets: ['latin'], variable: '--font-poppins' });
+const _merriweather = Merriweather({
+  weight: ['400', '700'],
+  subsets: ['latin'],
+  variable: '--font-merriweather',
+});
+const _playfair = Playfair_Display({
+  weight: ['400', '600', '700'],
+  subsets: ['latin'],
+  variable: '--font-playfair',
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://drishyam-news.com'),
@@ -87,7 +109,11 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`${_lora.variable} ${_geist.variable} ${_geistMono.variable} ${_noto.variable}`} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${_lora.variable} ${_geist.variable} ${_geistMono.variable} ${_noto.variable} ${_roboto.variable} ${_poppins.variable} ${_merriweather.variable} ${_playfair.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         {/* Google AdSense (Placeholder for Production) */}
         {/*
@@ -109,6 +135,7 @@ export default function RootLayout({
           <LanguageProvider>
             {children}
           </LanguageProvider>
+          <Toaster richColors position="top-right" />
         </ThemeProvider>
         <Analytics />
       </body>

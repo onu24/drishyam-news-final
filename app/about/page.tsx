@@ -3,6 +3,7 @@ import { Header } from '@/components/layout/Header';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { getAboutPageContent } from '@/lib/data';
+import Image from 'next/image';
 
 export const revalidate = 300;
 
@@ -13,6 +14,7 @@ export const metadata = {
 
 export default async function AboutPage() {
   const content = await getAboutPageContent();
+  const profileImage = content.profileImage || '/placeholder-user.jpg';
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -23,12 +25,19 @@ export default async function AboutPage() {
       <main className="flex-1 bg-secondary/10">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20 space-y-10">
           <section className="border-b border-border pb-8">
-            <h1 className="font-serif text-4xl sm:text-5xl font-extrabold tracking-tight text-foreground">
-              {content.heroTitle}
-            </h1>
-            <p className="mt-4 text-lg text-muted-foreground leading-relaxed max-w-3xl">
-              {content.heroSubtitle}
-            </p>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-5">
+              <div className="relative h-24 w-24 sm:h-28 sm:w-28 rounded-full overflow-hidden border-4 border-background shadow-lg bg-secondary/30">
+                <Image src={profileImage} alt="About page profile image" fill sizes="112px" className="object-cover" />
+              </div>
+              <div>
+                <h1 className="font-serif text-4xl sm:text-5xl font-extrabold tracking-tight text-foreground">
+                  {content.heroTitle}
+                </h1>
+                <p className="mt-4 text-lg text-muted-foreground leading-relaxed max-w-3xl">
+                  {content.heroSubtitle}
+                </p>
+              </div>
+            </div>
           </section>
 
           <section className="bg-background border border-border rounded-xl p-8 shadow-sm">

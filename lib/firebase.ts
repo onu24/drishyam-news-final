@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth } from 'firebase/auth';
-import { getFirestore, Firestore } from 'firebase/firestore';
+import { getFirestore, Firestore, initializeFirestore } from 'firebase/firestore';
 import { getStorage, FirebaseStorage } from 'firebase/storage';
 
 const firebaseConfig = {
@@ -19,9 +19,14 @@ let db: Firestore;
 let storage: FirebaseStorage;
 
 try {
-  app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+  if (getApps().length) {
+    app = getApp();
+    db = getFirestore(app);
+  } else {
+    app = initializeApp(firebaseConfig);
+    db = initializeFirestore(app, { experimentalForceLongPolling: true });
+  }
   auth = getAuth(app);
-  db = getFirestore(app);
   storage = getStorage(app);
 } catch (error) {
   console.error('[Firebase] Initialization error:', error);

@@ -41,7 +41,7 @@ export function Navbar() {
             { name: t('home'), slug: '/' },
             { name: t('latest'), slug: '/latest' },
             ...dynamicCategories,
-            { name: t('videos'), slug: '/visual-stories' }
+            { name: 'Web Stories', slug: '/visual-stories' }
           ]);
         }
       });

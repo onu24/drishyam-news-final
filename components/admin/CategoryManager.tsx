@@ -5,9 +5,8 @@ import { createPortal } from 'react-dom';
 import { Category } from '@/lib/types';
 import { CategoryForm } from './CategoryForm';
 import { PlusCircle, Pencil, Trash2 } from 'lucide-react';
-import { deleteCategory } from '@/lib/dashboard'; // Note: Client side calling might fail if it's admin SDK, usually better to use actions.
-
-// We'll use the action for delete if available, but for now we follow the existing pattern in the project.
+import { deleteCategoryAction } from '@/lib/actions/dashboard-actions';
+import { useRouter } from 'next/navigation';
 
 interface CategoryManagerProps {
   initialCategories: Category[];
@@ -15,11 +14,13 @@ interface CategoryManagerProps {
 }
 
 export function CategoryManager({ initialCategories, categoryCounts }: CategoryManagerProps) {
+  const router = useRouter();
   const [categories, setCategories] = useState(initialCategories);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | undefined>(undefined);
-
   const [mounted, setMounted] = useState(false);
+  const [deletingCategoryId, setDeletingCategoryId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -39,6 +40,32 @@ export function CategoryManager({ initialCategories, categoryCounts }: CategoryM
   const handleClose = () => {
     setIsFormOpen(false);
     setEditingCategory(undefined);
+  };
+
+  const handleDelete = async (cat: Category) => {
+    const articleCount = categoryCounts[cat.id] || 0;
+    const confirmationMessage =
+      articleCount > 0
+        ? `"${cat.name}" has ${articleCount} article(s). Deleting it may leave those articles without a valid category. Continue?`
+        : `Delete "${cat.name}" category?`;
+
+    if (!window.confirm(confirmationMessage)) return;
+
+    setDeleteError(null);
+    setDeletingCategoryId(cat.id);
+
+    try {
+      const result = await deleteCategoryAction(cat.id);
+      if (!result.success) throw new Error(result.error || 'Failed to delete category');
+
+      setCategories((prev) => prev.filter((item) => item.id !== cat.id));
+      router.refresh();
+    } catch (err) {
+      console.error('[CategoryManager] Delete error:', err);
+      setDeleteError(err instanceof Error ? err.message : 'Failed to delete category');
+    } finally {
+      setDeletingCategoryId(null);
+    }
   };
 
   return (
@@ -70,6 +97,12 @@ export function CategoryManager({ initialCategories, categoryCounts }: CategoryM
           </div>
         </div>,
         document.body
+      )}
+
+      {deleteError && (
+        <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {deleteError}
+        </div>
       )}
 
       <div className="bg-background border border-border rounded-lg overflow-hidden shadow-sm">
@@ -106,12 +139,13 @@ export function CategoryManager({ initialCategories, categoryCounts }: CategoryM
                     <span className="hidden md:inline">Edit</span>
                   </button>
                   <button 
-                    className="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors inline-flex items-center gap-1 text-xs font-bold uppercase tracking-widest opacity-50 cursor-not-allowed hidden md:inline-flex" 
-                    title="Disabled in mock mode"
-                    disabled
+                    onClick={() => handleDelete(cat)}
+                    className="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors inline-flex items-center gap-1 text-xs font-bold uppercase tracking-widest hidden md:inline-flex disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Delete category"
+                    disabled={deletingCategoryId === cat.id}
                   >
                     <Trash2 size={14} />
-                    <span className="hidden md:inline">Delete</span>
+                    <span className="hidden md:inline">{deletingCategoryId === cat.id ? 'Deleting...' : 'Delete'}</span>
                   </button>
                 </td>
               </tr>

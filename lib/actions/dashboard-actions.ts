@@ -15,6 +15,7 @@ import {
   createArticle, 
   createAuthor,
   createVisualStory,
+  deleteCategory,
   deleteAuthor,
   deleteVisualStory,
   getArticleById,
@@ -81,6 +82,48 @@ function revalidateVisualStoryPaths(slug?: string) {
 
   if (slug) {
     revalidatePath(`/visual-stories/${slug}`);
+  }
+}
+
+function cleanEnv(value?: string | null): string | undefined {
+  if (!value) return undefined;
+  return value.trim().replace(/^['"]|['"]$/g, '');
+}
+
+async function discoverStorageBucketsFromProject(): Promise<string[]> {
+  try {
+    const projectId =
+      cleanEnv(process.env.FIREBASE_PROJECT_ID) || cleanEnv(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID);
+    const clientEmail = cleanEnv(process.env.FIREBASE_CLIENT_EMAIL);
+    const privateKey = cleanEnv(process.env.FIREBASE_PRIVATE_KEY)?.replace(/\\n/g, '\n');
+
+    if (!projectId || !clientEmail || !privateKey) {
+      return [];
+    }
+
+    const { Storage } = await import('@google-cloud/storage');
+    const storageClient = new Storage({
+      projectId,
+      credentials: {
+        client_email: clientEmail,
+        private_key: privateKey,
+      },
+    });
+
+    const [buckets] = await storageClient.getBuckets({ maxResults: 200 });
+    return buckets
+      .map((b) => b.name)
+      .filter((name) => {
+        const normalized = String(name || '').toLowerCase();
+        if (!normalized) return false;
+        if (normalized.includes('artifact')) return false;
+        if (normalized.includes('gcf-sources')) return false;
+        if (normalized.includes('cloudbuild')) return false;
+        return true;
+      });
+  } catch (err) {
+    console.warn('[Dashboard Action] Bucket discovery failed:', err);
+    return [];
   }
 }
 
@@ -317,6 +360,24 @@ export async function updateCategoryAction(id: string, data: Partial<Category>) 
 }
 
 /**
+ * Deletes a category
+ */
+export async function deleteCategoryAction(id: string) {
+  try {
+    await deleteCategory(id);
+    revalidatePath('/admin/categories');
+    revalidatePath('/admin/articles/new');
+    revalidatePath('/admin/articles/[id]/edit', 'page');
+    revalidatePath('/category/[slug]', 'page');
+    revalidatePath('/');
+    return { success: true };
+  } catch (err) {
+    console.error('[Dashboard Action] Category Delete failed:', err);
+    return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };
+  }
+}
+
+/**
  * Super-secure admin-based file upload bypassing restricted client rules.
  */
 export async function uploadImageAction(formData: FormData) {
@@ -330,26 +391,64 @@ export async function uploadImageAction(formData: FormData) {
       .replace(/[^a-zA-Z0-9/_-]/g, '') || 'articles';
 
     // Dynamically import adminStorage to prevent early execution
-    const { adminStorage } = await import('@/lib/firebase-admin');
-    const bucket = adminStorage().bucket();
+    const { adminStorage, getAdminStorageBucketName, getAdminStorageBucketCandidates } = await import(
+      '@/lib/firebase-admin'
+    );
+    const storage = adminStorage();
 
     // Generate unique name
     const ext = file.name.split('.').pop();
     const filename = `${safeFolder}/${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    const fileNode = bucket.file(filename);
+    const primaryBucket = getAdminStorageBucketName();
+    const discoveredBuckets = await discoverStorageBucketsFromProject();
+    const bucketCandidates = Array.from(
+      new Set(
+        [primaryBucket, ...getAdminStorageBucketCandidates(), ...discoveredBuckets, undefined].filter(
+          (v) => v !== null
+        )
+      )
+    ) as Array<string | undefined>;
 
-    // Save using Firebase Admin (ignores security rules)
-    await fileNode.save(buffer, {
-      metadata: { contentType: file.type },
-      public: true, // Make publicly accessible in GCS
-    });
+    let lastError: unknown = null;
 
-    // The official public Google Cloud Storage URL format
-    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
+    for (const bucketName of bucketCandidates) {
+      try {
+        const bucket = bucketName ? storage.bucket(bucketName) : storage.bucket();
+        const fileNode = bucket.file(filename);
 
-    return { success: true, url: publicUrl };
+        // Save using Firebase Admin (ignores security rules)
+        await fileNode.save(buffer, {
+          metadata: { contentType: file.type },
+          public: true, // Make publicly accessible in GCS
+        });
+
+        // The official public Google Cloud Storage URL format
+        const publicUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
+        return { success: true, url: publicUrl };
+      } catch (bucketErr: any) {
+        lastError = bucketErr;
+        const errText = String(bucketErr?.message || '').toLowerCase();
+        const code = Number(bucketErr?.code);
+        const isBucketNotFound = code === 404 || errText.includes('bucket does not exist');
+
+        if (isBucketNotFound) {
+          console.warn(
+            `[Dashboard Action] Bucket "${bucketName || '(default)'}" not found. Trying next bucket candidate.`
+          );
+          continue;
+        }
+
+        throw bucketErr;
+      }
+    }
+
+    throw new Error(
+      `No valid Firebase Storage bucket found. Tried: ${bucketCandidates
+        .map((b) => b || '(default)')
+        .join(', ')}. Last error: ${lastError instanceof Error ? lastError.message : String(lastError)}`
+    );
   } catch (err) {
     console.error('[Dashboard Action] Upload failed:', err);
     return { success: false, error: err instanceof Error ? err.message : 'Upload failed' };

@@ -60,6 +60,14 @@ export default async function Home() {
 
   const leadArticle = featured || latest[0];
   const sidebarLatest = latest.filter(a => a.id !== leadArticle?.id).slice(0, 5);
+  const hasIndiaNews = indiaNews.length > 0;
+  const hasEconomyNews = economyNews.length > 0;
+  const hasPoliticsNews = politicsNews.length > 0;
+  const hasTechNews = techNews.length > 0;
+  const hasSportsNews = sportsNews.length > 0;
+  const hasEntertainmentNews = entertainNews.length > 0;
+  const hasJobsNews = jobsNews.length > 0;
+  const hasExamsNews = examsNews.length > 0;
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
@@ -83,45 +91,53 @@ export default async function Home() {
         </div>
         
         {/* India News: Editorial Feature */}
-        <SectionBlock 
-          title="National News" 
-          category="india" 
-          articles={indiaNews} 
-          variant="feature"
-        />
+        {hasIndiaNews && (
+          <SectionBlock
+            title="National News"
+            category="india"
+            articles={indiaNews}
+            variant="feature"
+          />
+        )}
         
         {/* Economy & Tech: Grid Layout */}
-        <div className="bg-zinc-50 border-y border-border/40 py-4">
-           <SectionBlock 
-            title="Markets & Economy" 
-            category="economy" 
-            articles={economyNews} 
-            variant="grid"
-          />
-        </div>
+        {hasEconomyNews && (
+          <div className="bg-zinc-50 border-y border-border/40 py-4">
+            <SectionBlock
+              title="Markets & Economy"
+              category="economy"
+              articles={economyNews}
+              variant="grid"
+            />
+          </div>
+        )}
 
         {/* Opinion Section (Full Width Editorial) */}
         <OpinionRow articles={opinionArticles} />
         
         {/* Politics: Dynamic Side-by-Side */}
-        <SectionBlock 
-          title="Politics & Policy" 
-          category="politics" 
-          articles={politicsNews} 
-          variant="side-by-side"
-        />
+        {hasPoliticsNews && (
+          <SectionBlock
+            title="Politics & Policy"
+            category="politics"
+            articles={politicsNews}
+            variant="side-by-side"
+          />
+        )}
 
         {/* Visual Content Layer */}
         <VisualStories />
         <VideoCarousel articles={videoArticles} />
 
         {/* Tech: Grid Layout */}
-        <SectionBlock 
-          title="Technology & Startup" 
-          category="technology" 
-          articles={techNews} 
-          variant="grid"
-        />
+        {hasTechNews && (
+          <SectionBlock
+            title="Technology & Startup"
+            category="technology"
+            articles={techNews}
+            variant="grid"
+          />
+        )}
 
         {/* Explainers: High Value Content */}
         <ExplainerGrid articles={explainerArticles} />
@@ -132,36 +148,48 @@ export default async function Home() {
         </div>
 
         {/* Sports & Entertainment: Light Grid */}
-        <div className="bg-zinc-50 border-y border-border/40 py-4">
-          <SectionBlock 
-            title="Sports Pulse" 
-            category="sports" 
-            articles={sportsNews} 
-            variant="grid"
-          />
-          <SectionBlock 
-            title="Showbiz" 
-            category="entertainment" 
-            articles={entertainNews} 
-            variant="grid"
-          />
-        </div>
+        {(hasSportsNews || hasEntertainmentNews) && (
+          <div className="bg-zinc-50 border-y border-border/40 py-4">
+            {hasSportsNews && (
+              <SectionBlock
+                title="Sports Pulse"
+                category="sports"
+                articles={sportsNews}
+                variant="grid"
+              />
+            )}
+            {hasEntertainmentNews && (
+              <SectionBlock
+                title="Showbiz"
+                category="entertainment"
+                articles={entertainNews}
+                variant="grid"
+              />
+            )}
+          </div>
+        )}
 
         {/* Jobs & Exams: List View */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 max-w-7xl mx-auto px-4 gap-12 py-10">
-           <SectionBlock 
-              title="Career & Jobs" 
-              category="jobs" 
-              articles={jobsNews} 
-              variant="minimal-list"
-            />
-            <SectionBlock 
-              title="Education & competitive" 
-              category="exams" 
-              articles={examsNews} 
-              variant="minimal-list"
-            />
-        </div>
+        {(hasJobsNews || hasExamsNews) && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 max-w-7xl mx-auto px-4 gap-12 py-10">
+            {hasJobsNews && (
+              <SectionBlock
+                title="Career & Jobs"
+                category="jobs"
+                articles={jobsNews}
+                variant="minimal-list"
+              />
+            )}
+            {hasExamsNews && (
+              <SectionBlock
+                title="Education & competitive"
+                category="exams"
+                articles={examsNews}
+                variant="minimal-list"
+              />
+            )}
+          </div>
+        )}
 
         <FeedPersonalization />
       </main>

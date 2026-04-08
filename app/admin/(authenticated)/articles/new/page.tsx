@@ -1,4 +1,4 @@
-import { ArticleForm } from '@/components/admin/ArticleForm';
+import { ArticleFormClient } from '@/components/admin/ArticleFormClient';
 import Link from 'next/link';
 import { getAuthors, getCategories } from '@/lib/dashboard';
 
@@ -19,7 +19,7 @@ export default async function NewArticlePage() {
         <p className="text-muted-foreground">Draft and publish a new story.</p>
       </div>
 
-      <ArticleForm availableCategories={categories} availableAuthors={authors} />
+      <ArticleFormClient availableCategories={categories} availableAuthors={authors} />
     </div>
   );
 }

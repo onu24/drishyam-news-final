@@ -11,6 +11,16 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
+const FALLBACK_LANGUAGE_CONTEXT: LanguageContextType = {
+  language: 'en',
+  setLanguage: () => {
+    // no-op fallback used only when provider is not mounted
+  },
+  t: (key: string | TranslationKey) => {
+    return (TRANSLATIONS.en as any)[key] || String(key);
+  },
+};
+
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = useState<Language>('en');
 
@@ -45,7 +55,10 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 export function useLanguage() {
   const context = useContext(LanguageContext);
   if (context === undefined) {
-    throw new Error('useLanguage must be used within a LanguageProvider');
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('[LanguageProvider] useLanguage called outside provider. Falling back to English defaults.');
+    }
+    return FALLBACK_LANGUAGE_CONTEXT;
   }
   return context;
 }

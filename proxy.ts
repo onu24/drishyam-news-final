@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/request';
+import type { NextRequest } from 'next/server';
 
 /**
- * middleware.ts — Route Protection (BYPASSED)
+ * proxy.ts — Route Protection (BYPASSED)
  *
  * Current state: AUTH DEACTIVATED for direct development access.
  * To re-enable, un-comment the redirect logic below.
  */
 
-export function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // const { pathname } = request.nextUrl;
   
   // // 1. Define sensitive routes
@@ -31,6 +31,9 @@ export function middleware(request: NextRequest) {
 
   return NextResponse.next();
 }
+
+// Support for default export
+export default proxy;
 
 export const config = {
   matcher: [

@@ -1,5 +1,13 @@
 export type ArticleStatus = 'draft' | 'review' | 'published';
 export type ArticleType = 'standard' | 'opinion' | 'explainer' | 'video';
+export type ArticleContentFont =
+  | 'serif'
+  | 'sans'
+  | 'mono'
+  | 'roboto'
+  | 'poppins'
+  | 'merriweather'
+  | 'playfair';
 
 export interface Category {
   id: string;
@@ -34,10 +42,12 @@ export interface Article {
   excerpt: string;
   content: string;
   keyPoints?: string[];
+  contentFont?: ArticleContentFont;
   articleType: ArticleType;
   
   // Media
   coverImage: string; // Unified Image
+  galleryImages?: string[];
   videoUrl?: string; // For type: 'video'
   
   // Metadata & Taxonomy
@@ -100,6 +110,7 @@ export interface AboutPageContent {
   id: string;
   heroTitle: string;
   heroSubtitle: string;
+  profileImage: string;
   intro: string;
   story: string;
   mission: string;

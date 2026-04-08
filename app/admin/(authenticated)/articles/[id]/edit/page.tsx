@@ -1,4 +1,4 @@
-import { ArticleForm } from '@/components/admin/ArticleForm';
+import { ArticleFormClient } from '@/components/admin/ArticleFormClient';
 import Link from 'next/link';
 import { getArticleById, getAuthors, getCategories } from '@/lib/dashboard';
 
@@ -37,7 +37,7 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
         <p className="text-muted-foreground">Update the article details below</p>
       </div>
 
-      <ArticleForm article={article} availableCategories={categories} availableAuthors={authors} />
+      <ArticleFormClient article={article} availableCategories={categories} availableAuthors={authors} />
     </div>
   );
 }

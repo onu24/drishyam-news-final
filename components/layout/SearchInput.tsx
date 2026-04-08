@@ -17,18 +17,25 @@ export function SearchInput() {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    let isActive = true;
     const delayDebounceFn = setTimeout(async () => {
-      if (query.trim().length > 2) {
+      const trimmedQuery = query.trim();
+      if (trimmedQuery.length >= 2) {
         setIsLoading(true);
-        const data = await searchArticles(query);
+        const data = await searchArticles(trimmedQuery);
+        if (!isActive) return;
         setResults(data.slice(0, 5)); // Show top 5 in suggest
         setIsLoading(false);
       } else {
         setResults([]);
+        setIsLoading(false);
       }
     }, 300);
 
-    return () => clearTimeout(delayDebounceFn);
+    return () => {
+      isActive = false;
+      clearTimeout(delayDebounceFn);
+    };
   }, [query]);
 
   // Handle click outside to close dropdown
@@ -75,7 +82,7 @@ export function SearchInput() {
       </form>
 
       {/* Suggestions Dropdown */}
-      {isFocused && (query.length > 2 || results.length > 0) && (
+      {isFocused && (query.trim().length >= 2 || results.length > 0) && (
         <div className="absolute top-full mt-2 left-0 right-0 bg-background border border-border rounded-xl shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="p-2">
             {isLoading ? (
@@ -109,7 +116,7 @@ export function SearchInput() {
                         {article.title}
                       </h4>
                       <p className="text-[10px] text-muted-foreground mt-1 capitalize">
-                        {article.categoryId?.replace('cat_', '')}
+                        {article.category || article.categoryId?.replace('cat_', '')}
                       </p>
                     </div>
                   </Link>
@@ -124,7 +131,7 @@ export function SearchInput() {
                   <ArrowRight size={14} />
                 </Link>
               </div>
-            ) : query.length > 2 ? (
+            ) : query.trim().length >= 2 ? (
                <div className="py-8 px-4 text-center">
                   <p className="text-sm text-muted-foreground">No matches for <span className="font-bold text-foreground">"{query}"</span></p>
                </div>
