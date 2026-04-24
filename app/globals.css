@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Martel:wght@400;700;900&family=Yantramanav:wght@300;400;500;700;900&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
@@ -82,6 +83,8 @@
   --font-poppins: var(--font-poppins);
   --font-merriweather: var(--font-merriweather);
   --font-playfair: var(--font-playfair);
+  --font-hindi: 'Yantramanav', sans-serif;
+  --font-hindi-serif: 'Martel', serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -118,6 +121,13 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Premium Animation Tokens */
+  --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-sm: 150ms;
+  --duration-md: 300ms;
+  --duration-lg: 500ms;
 }
 
 @layer base {
@@ -138,45 +148,69 @@
     scrollbar-width: none;
   }
   
-  @keyframes ticker-scroll {
-    0% { transform: translateX(100%); }
-    100% { transform: translateX(-100%); }
-  }
-  
-  .animate-ticker {
-    animation: ticker-scroll 30s linear infinite;
-  }
-  
-  .animate-ticker:hover {
-    animation-play-state: paused;
-  }
-
-  /* Seamless ticker: content is duplicated, so translating exactly
-     -50% makes the second copy take over where the first started. */
   @keyframes ticker-seamless {
     0% { transform: translateX(0); }
     100% { transform: translateX(-50%); }
   }
 
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  @keyframes ring {
+    0% { transform: rotate(0); }
+    10% { transform: rotate(15deg); }
+    20% { transform: rotate(-15deg); }
+    30% { transform: rotate(10deg); }
+    40% { transform: rotate(-10deg); }
+    50% { transform: rotate(5deg); }
+    60% { transform: rotate(-5deg); }
+    100% { transform: rotate(0); }
+  }
+
   .animate-ticker-seamless {
-    animation: ticker-seamless 35s linear infinite;
+    animation: ticker-seamless 45s linear infinite;
   }
 
   .animate-ticker-seamless:hover {
     animation-play-state: paused;
   }
 
+  .animate-ring {
+    animation: ring 1.5s ease-in-out;
+  }
+
+  /* Interactive Utility Classes */
+  .interactive-hover {
+    transition: all var(--duration-md) var(--ease-premium);
+  }
+  
+  .hover-lift {
+    transition: all var(--duration-md) var(--ease-premium);
+  }
+  
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    @apply shadow-xl shadow-black/5 dark:shadow-white/5;
+  }
+  
+  .active-press:active {
+    transform: scale(0.98);
+    transition-duration: var(--duration-sm);
+  }
+
   /* Editorial Micro-interactions & Intersect Reveals */
   .reveal-base {
     opacity: 0;
     transform: translateY(15px);
-    transition: opacity 700ms cubic-bezier(0.16, 1, 0.3, 1), transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity var(--duration-lg) var(--ease-premium), transform var(--duration-lg) var(--ease-premium);
     will-change: opacity, transform;
   }
   
   .reveal-blur {
     filter: blur(4px);
-    transition: opacity 700ms cubic-bezier(0.16, 1, 0.3, 1), transform 700ms cubic-bezier(0.16, 1, 0.3, 1), filter 700ms cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity var(--duration-lg) var(--ease-premium), transform var(--duration-lg) var(--ease-premium), filter var(--duration-lg) var(--ease-premium);
   }
 
   .reveal-visible {
@@ -189,9 +223,23 @@
   .reveal-delay-200 { transition-delay: 200ms; }
   .reveal-delay-300 { transition-delay: 300ms; }
   .reveal-delay-400 { transition-delay: 400ms; }
+
+  /* Premium Hindi Font Utilities */
+  .font-hindi {
+    font-family: var(--font-hindi);
+  }
+  
+  .font-hindi-serif {
+    font-family: var(--font-hindi-serif);
+  }
   
   @media (prefers-reduced-motion: reduce) {
-    .reveal-base, .reveal-blur {
+    .animate-ticker-seamless,
+    .reveal-base, 
+    .reveal-blur,
+    .hover-lift,
+    .active-press {
+      animation: none !important;
       transition: none !important;
       transform: none !important;
       opacity: 1 !important;

@@ -28,39 +28,43 @@ export function Header() {
   return (
     <header 
       suppressHydrationWarning
-      className={`sticky top-0 z-40 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+      className={`sticky top-0 z-40 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
         scrolled 
-          ? 'bg-background/80 backdrop-blur-md shadow-sm border-b border-border/50' 
+          ? 'bg-background/90 backdrop-blur-xl shadow-lg shadow-black/5 dark:shadow-white/5 border-b border-border/50' 
           : 'bg-background border-b border-border'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className={`flex items-center justify-between transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-          scrolled ? 'h-14 sm:h-16' : 'h-16 sm:h-20'
+        <div className={`flex items-center justify-between transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          scrolled ? 'h-14 sm:h-16' : 'h-16 sm:h-22'
         }`}>
           
           {/* Logo Main Segment */}
-          <Link href="/" className="flex-shrink-0 flex items-center gap-2 group">
-            <div className="flex flex-col">
-              <h1 className="font-serif text-4xl sm:text-5xl font-extrabold text-primary tracking-tight leading-none group-hover:opacity-90 transition-opacity">
+          <Link href="/" className="flex-shrink-0 flex items-center gap-2 group py-2">
+            <div className="flex flex-col relative">
+               <h1 className={`font-serif text-4xl sm:text-5xl font-black text-primary tracking-tight leading-none group-hover:scale-[1.02] transition-transform duration-300 ${language === 'hi' ? 'font-hindi-serif' : ''}`}>
                 Drishyam
               </h1>
-              <p className={`text-[10px] sm:text-xs font-semibold text-muted-foreground tracking-widest uppercase mt-0.5 ml-1 ${language === 'hi' ? 'font-hindi' : ''}`}>
-                {t('news_analysis')}
-              </p>
+              <div className="flex items-center gap-2 mt-1 px-1">
+                <span className="h-[1px] flex-1 bg-border/60" />
+                <p className={`text-[10px] sm:text-[11px] font-bold text-muted-foreground tracking-[0.25em] uppercase whitespace-nowrap ${language === 'hi' ? 'font-hindi tracking-normal text-xs' : ''}`}>
+                  {t('news_analysis')}
+                </p>
+                <span className="h-[1px] flex-1 bg-border/60" />
+              </div>
             </div>
           </Link>
 
           {/* Right Actions Segment */}
-          <div className="flex items-center gap-4 lg:gap-6 flex-1 justify-end max-w-xl">
-            <div className="hidden md:block w-full max-w-xs lg:max-w-sm">
+          <div className="flex items-center gap-3 lg:gap-6 flex-1 justify-end max-w-xl">
+            <div className="hidden md:block w-full max-w-xs lg:max-w-md">
               <SearchInput />
             </div>
 
             <button 
               aria-label="Search" 
               suppressHydrationWarning
-              className="md:hidden text-foreground hover:text-primary transition-colors p-2"
+              className="md:hidden text-foreground/70 hover:text-primary transition-all p-2.5 bg-secondary/50 rounded-full active:scale-90"
             >
               <Search className="h-5 w-5" />
             </button>
@@ -68,10 +72,10 @@ export function Header() {
               aria-label="Notifications"
               onClick={handleNotificationsClick}
               suppressHydrationWarning
-              className="text-foreground hover:text-primary transition-colors p-2 relative"
+              className="group/bell text-foreground/70 hover:text-primary transition-all p-2.5 bg-secondary/50 rounded-full relative active:scale-90"
             >
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary ring-2 ring-background"></span>
+              <Bell className="h-5 w-5 group-hover/bell:animate-ring" />
+              <span className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background animate-pulse"></span>
             </button>
           </div>
         </div>

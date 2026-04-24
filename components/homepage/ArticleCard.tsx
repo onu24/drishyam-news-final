@@ -36,15 +36,15 @@ export function ArticleCard({ article, variant = 'default' }: ArticleCardProps) 
 
   if (variant === 'featured') {
     return (
-      <Link href={`/article/${article.slug}`} className="group cursor-pointer block">
-        <div className="relative mb-6 overflow-hidden bg-muted aspect-[16/9] w-full rounded-sm border border-border/50 shadow-sm">
+      <Link href={`/article/${article.slug}`} className="group cursor-pointer block hover-lift active-press">
+        <div className="relative mb-6 overflow-hidden bg-muted aspect-[16/9] w-full rounded-sm border border-border/50 shadow-sm transition-shadow duration-300 group-hover:shadow-xl">
           {imageUrl ? (
             <Image
               src={imageUrl}
               alt={displayTitle}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              className="object-cover group-hover:scale-[1.02] transition-transform duration-700"
+              className="object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out"
               priority
             />
           ) : (
@@ -79,7 +79,7 @@ export function ArticleCard({ article, variant = 'default' }: ArticleCardProps) 
 
   if (variant === 'horizontal') {
     return (
-      <Link href={`/article/${article.slug}`} className="group cursor-pointer flex gap-4 py-4 first:pt-0">
+      <Link href={`/article/${article.slug}`} className="group cursor-pointer flex gap-4 py-4 first:pt-0 hover-lift active-press border-b border-border/10 last:border-0 translate-x-0">
         <div className="relative hidden sm:block w-32 h-24 shrink-0 overflow-hidden bg-muted rounded-sm">
           {imageUrl && (
             <Image
@@ -106,7 +106,7 @@ export function ArticleCard({ article, variant = 'default' }: ArticleCardProps) 
 
   if (variant === 'compact') {
     return (
-      <Link href={`/article/${article.slug}`} className="group cursor-pointer">
+      <Link href={`/article/${article.slug}`} className="group cursor-pointer hover-lift active-press block">
         <div className="relative mb-3 aspect-[3/2] overflow-hidden bg-muted w-full rounded-sm">
           {imageUrl && (
             <Image
@@ -130,7 +130,7 @@ export function ArticleCard({ article, variant = 'default' }: ArticleCardProps) 
   }
 
   return (
-    <Link href={`/article/${article.slug}`} className="group cursor-pointer block border-b border-border/50 pb-6 mb-6 last:border-0 last:pb-0 last:mb-0">
+    <Link href={`/article/${article.slug}`} className="group cursor-pointer block border-b border-border/50 pb-6 mb-6 last:border-0 last:pb-0 last:mb-0 hover-lift active-press">
       <div className="relative mb-4 aspect-video overflow-hidden bg-muted w-full rounded-sm">
         {imageUrl && (
           <Image

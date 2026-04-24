@@ -7,6 +7,7 @@ import { ScrollReveal } from '@/components/ScrollReveal';
 import { useLanguage } from '@/components/providers/LanguageProvider';
 
 import { SocialShareSide } from '@/components/article/SocialShareSide';
+import { SidebarNewsletter } from '@/components/article/SidebarNewsletter';
 
 interface ArticleSidebarProps {
   relatedArticles: Article[];
@@ -69,6 +70,11 @@ export function ArticleSidebar({ relatedArticles, trendingArticles, articleTitle
           </div>
         </ScrollReveal>
       )}
+
+      {/* Stay Updated / Newsletter */}
+      <ScrollReveal delay={250}>
+        <SidebarNewsletter />
+      </ScrollReveal>
 
       {/* Ad Slot */}
       <ScrollReveal delay={300}>

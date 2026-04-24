@@ -74,6 +74,7 @@ export function StoryViewer({ story }: StoryViewerProps) {
           src={backgroundImage} 
           alt="" 
           fill 
+          sizes="100px"
           className="object-cover"
           priority
         />
@@ -158,13 +159,15 @@ export function StoryViewer({ story }: StoryViewerProps) {
               preload="metadata"
             />
           ) : (
-            <Image 
-              src={backgroundImage} 
-              alt={currentSlide.title} 
-              fill 
-              className="object-cover"
-              priority
-            />
+          <Image 
+            src={backgroundImage} 
+            alt={currentSlide.title} 
+            fill 
+            sizes="(max-width: 500px) 100vw, 500px"
+            className="object-cover"
+            priority
+            unoptimized={backgroundImage.includes('cloudinary')}
+          />
           )}
           {/* Bottom Gradient for Text */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />

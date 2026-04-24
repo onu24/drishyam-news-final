@@ -4,13 +4,13 @@ import { useTheme } from 'next-themes';
 import { SunIcon, MoonIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useLanguage } from '@/components/providers/LanguageProvider';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export function TopBar() {
   const { theme, setTheme } = useTheme();
   const { language, setLanguage } = useLanguage();
   const [mounted, setMounted] = useState(false);
 
-  // Prevent hydration mismatch
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -27,45 +27,70 @@ export function TopBar() {
     <div className="bg-secondary/50 border-b border-border py-1.5 px-3 sm:px-4 text-[11px] sm:text-xs font-medium text-muted-foreground w-full z-50 relative">
       <div className="max-w-7xl mx-auto flex items-center justify-end sm:justify-between gap-3">
         {/* Date */}
-        <div className="tracking-wide hidden sm:block">{mounted ? dateStr : ''}</div>
+        <div className="tracking-wide hidden sm:block font-serif italic">{mounted ? dateStr : ''}</div>
 
         {/* Right side controls */}
-        <div className="flex items-center gap-3 sm:gap-4 ml-auto">
-          {/* Language Switcher */}
-          <div className="flex items-center gap-2 bg-background/70 border border-border rounded-full px-2.5 py-1">
+        <div className="flex items-center gap-4 sm:gap-6 ml-auto">
+          {/* Language Switcher - Premium Layout-ID Style */}
+          <div className="relative flex items-center bg-secondary dark:bg-zinc-900 border border-border/40 rounded-full p-1 shadow-inner">
             <button
               onClick={() => setLanguage('en')}
               suppressHydrationWarning
-              className={`hover:text-foreground transition-colors leading-none ${
-                language === 'en' ? 'text-foreground font-bold underline decoration-primary underline-offset-4' : ''
+              className={`relative h-6 px-3 flex items-center justify-center transition-colors duration-300 ${
+                language === 'en' ? 'text-white' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              EN
+              {language === 'en' && (
+                <motion.div
+                  layoutId="lang-active"
+                  className="absolute inset-0 bg-primary rounded-full shadow-lg shadow-primary/30 z-0"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
+              <span className="relative z-10 text-[10px] font-black tracking-tighter">EN</span>
             </button>
-            <span className="text-border">|</span>
+
             <button
               onClick={() => setLanguage('hi')}
               suppressHydrationWarning
-              className={`font-hindi hover:text-foreground transition-colors leading-none ${
-                language === 'hi' ? 'text-foreground font-bold underline decoration-primary underline-offset-4' : 'font-medium'
+              className={`relative h-6 px-4 flex items-center justify-center transition-colors duration-300 ${
+                language === 'hi' ? 'text-white' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              {'\u0939\u093f\u0902\u0926\u0940'}
+              {language === 'hi' && (
+                <motion.div
+                  layoutId="lang-active"
+                  className="absolute inset-0 bg-primary rounded-full shadow-lg shadow-primary/30 z-0"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
+              <span className="relative z-10 text-[12px] font-hindi font-bold">हिन्दी</span>
             </button>
           </div>
 
           {/* Theme Toggle */}
-          {mounted && (
-            <button
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="h-7 w-7 inline-flex items-center justify-center rounded-full border border-border bg-background/70 hover:text-foreground transition-colors"
-              aria-label="Toggle theme"
-            >
-              {theme === 'dark' ? <SunIcon className="h-4 w-4" /> : <MoonIcon className="h-4 w-4" />}
-            </button>
-          )}
+          <div className="relative h-8 w-8">
+            <AnimatePresence mode="wait" initial={false}>
+              {mounted && (
+                <motion.button
+                  key={theme}
+                  initial={{ opacity: 0, rotate: -90, scale: 0.8 }}
+                  animate={{ opacity: 1, rotate: 0, scale: 1 }}
+                  exit={{ opacity: 0, rotate: 90, scale: 0.8 }}
+                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                  suppressHydrationWarning
+                  className="absolute inset-0 inline-flex items-center justify-center rounded-full border border-border/50 bg-secondary/80 dark:bg-zinc-900/80 backdrop-blur-md hover:text-primary hover:border-primary/30 transition-all shadow-sm active:scale-90"
+                  aria-label="Toggle theme"
+                >
+                  {theme === 'dark' ? <SunIcon className="h-4 w-4" /> : <MoonIcon className="h-4 w-4" />}
+                </motion.button>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </div>
   );
 }
+

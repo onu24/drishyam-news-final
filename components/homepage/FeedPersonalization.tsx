@@ -76,81 +76,109 @@ export function FeedPersonalization() {
   };
 
   return (
-    <section className="bg-secondary/30 py-10 border-b border-border" id="filter-feed">
-      <div className="max-w-4xl mx-auto px-4 text-center">
-        <h2 className="font-bold text-xl sm:text-2xl tracking-tight text-foreground flex items-center justify-center mb-2">
-          <Settings2 className="mr-2 h-5 w-5 text-primary" />
+    <section className="relative overflow-hidden bg-zinc-50 dark:bg-zinc-950/40 py-16 border-b border-border/40 selection:bg-primary/10" id="filter-feed">
+      {/* Decorative background elements */}
+      <div className="absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-transparent via-border/40 to-transparent pointer-events-none" />
+      <div className="absolute top-0 right-1/4 w-px h-full bg-gradient-to-b from-transparent via-border/40 to-transparent pointer-events-none" />
+      
+      <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
+        <div className="inline-flex items-center justify-center p-3 bg-white dark:bg-zinc-950 rounded-full shadow-xl mb-6 ring-1 ring-border/50">
+          <Settings2 className="h-6 w-6 text-primary animate-[spin_4s_linear_infinite]" />
+        </div>
+        
+        <h2 className={`text-2xl sm:text-4xl font-black tracking-tight text-foreground mb-3 ${useLanguage().language === 'hi' ? 'font-hindi-serif' : 'font-serif'}`}>
           {t('customize_feed')}
         </h2>
-        <p className="text-sm text-muted-foreground mb-6">
+        
+        <p className={`text-sm sm:text-base text-muted-foreground/80 max-w-lg mx-auto mb-10 leading-relaxed ${useLanguage().language === 'hi' ? 'font-hindi font-medium' : ''}`}>
           {t('newsletter_intro')}
         </p>
 
-        <div className="flex flex-wrap justify-center gap-x-3 gap-y-3 sm:gap-x-4 sm:gap-y-4 mb-7">
+        <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-10">
           {TOPICS.map((topic) => {
             const isActive = selectedSlugs.includes(topic.slug);
+            const isHindi = useLanguage().language === 'hi';
             return (
               <button
                 key={topic.slug}
                 onClick={() => toggleTopic(topic.slug)}
                 suppressHydrationWarning
-                className={`px-5 sm:px-6 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 ${
+                className={`group relative px-4 sm:px-5 py-2 rounded-full transition-all duration-300 transform active:scale-90 border shadow-sm ${
+                  isHindi ? 'font-hindi font-bold text-sm pt-2' : 'font-sans text-[10px] uppercase font-black tracking-widest'
+                } ${
                   isActive
-                    ? 'bg-primary text-primary-foreground shadow-md scale-105 border-primary'
-                    : 'bg-background border border-border text-foreground hover:border-primary/50 hover:text-primary'
+                    ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20 scale-105 ring-4 ring-primary/10'
+                    : 'bg-white dark:bg-zinc-900 border-border/60 dark:border-zinc-800 text-foreground/60 hover:border-primary/40 hover:text-primary hover:bg-white dark:hover:bg-zinc-800 hover:-translate-y-0.5'
                 }`}
               >
-                {t(topic.label)}
+                <div className="flex items-center gap-1.5">
+                  {isActive && <Check className="h-3 w-3 animate-in zoom-in-50 duration-300" />}
+                  {t(topic.label)}
+                </div>
               </button>
             );
           })}
         </div>
         
-          <div className="mt-2 flex flex-col items-center justify-center gap-3">
-            <button 
-              onClick={savePreferences}
-              disabled={isSaved}
-              suppressHydrationWarning
-              className={`min-w-[220px] font-bold text-xs uppercase tracking-[0.14em] px-8 py-3 rounded-sm transition-all flex items-center justify-center ${
-                isSaved 
-                  ? 'bg-green-600 text-white cursor-default' 
-                  : 'bg-foreground text-background hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0'
-              }`}
-            >
+        <div className="flex flex-col items-center justify-center gap-4">
+          <button 
+            onClick={savePreferences}
+            disabled={isSaved}
+            suppressHydrationWarning
+            className={`group/btn min-w-[260px] relative font-bold px-10 py-4 rounded-sm transition-all duration-500 overflow-hidden shadow-2xl ${
+              useLanguage().language === 'hi' ? 'font-hindi text-lg pt-3' : 'font-sans text-xs uppercase tracking-[0.25em]'
+            } ${
+              isSaved 
+                ? 'bg-green-600 text-white cursor-default scale-95 opacity-90' 
+                : 'bg-foreground text-background hover:bg-primary hover:text-white dark:bg-white dark:text-zinc-950 dark:hover:bg-primary dark:hover:text-white'
+            }`}
+          >
+            {/* Hover Glaze Effect */}
+            <div className="absolute inset-0 bg-white/10 -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000 ease-in-out pointer-events-none" />
+            
+            <div className="relative z-10 flex items-center justify-center">
               {isSaved ? (
                 <>
-                  <Check className="mr-2 h-4 w-4" />
+                  <Check className="mr-3 h-5 w-5" />
                   {t('subscribed_success')}
                 </>
               ) : (
-                t('customize_feed')
+                <>
+                  <span>{t('customize_feed')}</span>
+                  {!isSaved && <span className="ml-3 group-hover/btn:translate-x-1 transition-transform">→</span>}
+                </>
               )}
-            </button>
+            </div>
+          </button>
 
-            {selectedSlugs.length > 0 && (
-              <button
-                onClick={() => {
-                  setSelectedSlugs([]);
-                  document.cookie = 'drishyam_user_prefs=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-                  setIsSaved(false);
-                  toast.success(t('reset_prefs'), {
-                    description: 'You are back to the default homepage feed.',
-                  });
-                  router.refresh();
-                }}
-                className="mt-1 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground hover:text-primary transition-colors underline underline-offset-4"
-              >
-                {t('reset_prefs')}
-              </button>
-            )}
-          </div>
-          
-          {selectedSlugs.length > 0 && !isSaved && (
-            <p className="mt-3 text-[10px] text-muted-foreground animate-pulse">
-              Click save to apply your {selectedSlugs.length} selected topics
-            </p>
+          {selectedSlugs.length > 0 && (
+            <button
+              onClick={() => {
+                setSelectedSlugs([]);
+                document.cookie = 'drishyam_user_prefs=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+                setIsSaved(false);
+                toast.success(t('reset_prefs'), {
+                  description: 'You are back to the default homepage feed.',
+                });
+                router.refresh();
+              }}
+              className="group/reset text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 hover:text-primary transition-all duration-300 flex items-center gap-2 pt-2"
+            >
+              <span className="h-px w-4 bg-muted-foreground/30 group-hover/reset:w-8 group-hover/reset:bg-primary transition-all" />
+              {t('reset_prefs')}
+              <span className="h-px w-4 bg-muted-foreground/30 group-hover/reset:w-8 group-hover/reset:bg-primary transition-all" />
+            </button>
           )}
         </div>
+        
+        {selectedSlugs.length > 0 && !isSaved && (
+          <div className="mt-6 flex items-center justify-center gap-2 text-[10px] text-primary/70 font-black uppercase tracking-[0.2em] animate-pulse">
+            <span className="h-1 w-1 rounded-full bg-primary" />
+            Click save to apply {selectedSlugs.length} topics
+            <span className="h-1 w-1 rounded-full bg-primary" />
+          </div>
+        )}
+      </div>
     </section>
   );
 }

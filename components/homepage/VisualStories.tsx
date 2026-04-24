@@ -1,27 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { VisualStory } from '@/lib/types';
-import { getVisualStories } from '@/lib/data';
 import { useLanguage } from '@/components/providers/LanguageProvider';
 
-export function VisualStories() {
+interface VisualStoriesProps {
+  stories: VisualStory[];
+}
+
+export function VisualStories({ stories = [] }: VisualStoriesProps) {
   const { language, t } = useLanguage();
-  const [stories, setStories] = useState<VisualStory[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function loadStories() {
-      const data = await getVisualStories();
-      setStories(data);
-      setLoading(false);
-    }
-    loadStories();
-  }, []);
-
-  if (loading) return null;
+  if (!stories || stories.length === 0) return null;
 
   return (
     <section className="bg-background border-y border-border py-8 sm:py-10">

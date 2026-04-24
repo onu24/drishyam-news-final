@@ -11,12 +11,14 @@ import { VideoCarousel } from '@/components/homepage/VideoCarousel';
 import { VisualStories } from '@/components/homepage/VisualStories';
 import { FeedPersonalization } from '@/components/homepage/FeedPersonalization';
 import { AdContainer } from '@/components/AdContainer';
+import { Reveal } from '@/components/animations/Reveal';
 
 import { 
   getFeaturedArticle, 
   getLatestArticles, 
   getArticlesByCategory,
   getArticlesByType,
+  getVisualStories,
 } from '@/lib/data-server';
 
 // Exported ISR Revalidation
@@ -43,6 +45,7 @@ export default async function Home() {
     explainerArticles,
     opinionArticles,
     videoArticles,
+    visualStories,
   ] = await Promise.all([
     getFeaturedArticle(),
     getLatestArticles(12),
@@ -57,10 +60,12 @@ export default async function Home() {
     getArticlesByType('explainer', 3),
     getArticlesByType('opinion', 4),
     getArticlesByType('video', 5),
+    getVisualStories(),
   ]);
 
   const leadArticle = featured || latest[0];
   const sidebarLatest = latest.filter(a => a.id !== leadArticle?.id).slice(0, 5);
+  const visuals = visualStories || [];
   const hasIndiaNews = indiaNews.length > 0;
   const hasEconomyNews = economyNews.length > 0;
   const hasPoliticsNews = politicsNews.length > 0;
@@ -81,10 +86,12 @@ export default async function Home() {
       <main className="flex-1 w-full space-y-4">
         {/* Above the Fold: Lead Hierarchy */}
         {leadArticle && (
-          <HeroLatestSection 
-            leadArticle={leadArticle} 
-            latestArticles={sidebarLatest} 
-          />
+          <Reveal>
+            <HeroLatestSection 
+              leadArticle={leadArticle} 
+              latestArticles={sidebarLatest} 
+            />
+          </Reveal>
         )}
 
         {/* Lead Ad Banner */}
@@ -94,22 +101,26 @@ export default async function Home() {
         
         {/* India News: Editorial Feature */}
         {hasIndiaNews && (
-          <SectionBlock
-            category="india"
-            articles={indiaNews}
-            variant="feature"
-          />
+          <Reveal delay={0.2}>
+            <SectionBlock
+              category="india"
+              articles={indiaNews}
+              variant="feature"
+            />
+          </Reveal>
         )}
         
         {/* Economy & Tech: Grid Layout */}
         {hasEconomyNews && (
-          <div className="bg-zinc-50 border-y border-border/40 py-4">
-            <SectionBlock
-              category="economy"
-              articles={economyNews}
-              variant="grid"
-            />
-          </div>
+          <Reveal delay={0.1}>
+            <div className="bg-zinc-50 border-y border-border/40 py-4">
+              <SectionBlock
+                category="economy"
+                articles={economyNews}
+                variant="grid"
+              />
+            </div>
+          </Reveal>
         )}
 
         {/* Opinion Section (Full Width Editorial) */}
@@ -117,28 +128,36 @@ export default async function Home() {
         
         {/* Politics: Dynamic Side-by-Side */}
         {hasPoliticsNews && (
-          <SectionBlock
-            category="politics"
-            articles={politicsNews}
-            variant="side-by-side"
-          />
+          <Reveal delay={0.2}>
+            <SectionBlock
+              category="politics"
+              articles={politicsNews}
+              variant="side-by-side"
+            />
+          </Reveal>
         )}
 
         {/* Visual Content Layer */}
-        <VisualStories />
-        <VideoCarousel articles={videoArticles} />
+        <Reveal delay={0.3}>
+          <VisualStories stories={visuals} />
+          <VideoCarousel articles={videoArticles} />
+        </Reveal>
 
         {/* Tech: Grid Layout */}
         {hasTechNews && (
-          <SectionBlock
-            category="technology"
-            articles={techNews}
-            variant="grid"
-          />
+          <Reveal delay={0.1}>
+            <SectionBlock
+              category="technology"
+              articles={techNews}
+              variant="grid"
+            />
+          </Reveal>
         )}
 
         {/* Explainers: High Value Content */}
-        <ExplainerGrid articles={explainerArticles} />
+        <Reveal delay={0.2}>
+          <ExplainerGrid articles={explainerArticles} />
+        </Reveal>
 
         {/* Middle Ad Banner */}
         <div className="max-w-7xl mx-auto px-4 py-6">
@@ -147,42 +166,46 @@ export default async function Home() {
 
         {/* Sports & Entertainment: Light Grid */}
         {(hasSportsNews || hasEntertainmentNews) && (
-          <div className="bg-zinc-50 border-y border-border/40 py-4">
-            {hasSportsNews && (
-              <SectionBlock
-                category="sports"
-                articles={sportsNews}
-                variant="grid"
-              />
-            )}
-            {hasEntertainmentNews && (
-              <SectionBlock
-                category="entertainment"
-                articles={entertainNews}
-                variant="grid"
-              />
-            )}
-          </div>
+          <Reveal delay={0.1}>
+            <div className="bg-zinc-50 border-y border-border/40 py-4">
+              {hasSportsNews && (
+                <SectionBlock
+                  category="sports"
+                  articles={sportsNews}
+                  variant="grid"
+                />
+              )}
+              {hasEntertainmentNews && (
+                <SectionBlock
+                  category="entertainment"
+                  articles={entertainNews}
+                  variant="grid"
+                />
+              )}
+            </div>
+          </Reveal>
         )}
 
         {/* Jobs & Exams: List View */}
         {(hasJobsNews || hasExamsNews) && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 max-w-7xl mx-auto px-4 gap-12 py-10">
-            {hasJobsNews && (
-              <SectionBlock
-                category="jobs"
-                articles={jobsNews}
-                variant="minimal-list"
-              />
-            )}
-            {hasExamsNews && (
-              <SectionBlock
-                category="exams"
-                articles={examsNews}
-                variant="minimal-list"
-              />
-            )}
-          </div>
+          <Reveal delay={0.3}>
+            <div className="grid grid-cols-1 lg:grid-cols-2 max-w-7xl mx-auto px-4 gap-12 py-10">
+              {hasJobsNews && (
+                <SectionBlock
+                  category="jobs"
+                  articles={jobsNews}
+                  variant="minimal-list"
+                />
+              )}
+              {hasExamsNews && (
+                <SectionBlock
+                  category="exams"
+                  articles={examsNews}
+                  variant="minimal-list"
+                />
+              )}
+            </div>
+          </Reveal>
         )}
 
         <FeedPersonalization />

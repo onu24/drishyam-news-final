@@ -102,6 +102,7 @@ export const metadata: Metadata = {
 }
 
 import { LanguageProvider } from '@/components/providers/LanguageProvider'
+import { BackToTop } from '@/components/layout/BackToTop'
 
 export default function RootLayout({
   children,
@@ -133,6 +134,7 @@ export default function RootLayout({
         >
           <LanguageProvider>
             {children}
+            <BackToTop />
           </LanguageProvider>
           <Toaster richColors position="top-right" />
         </ThemeProvider>

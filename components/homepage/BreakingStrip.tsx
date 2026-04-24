@@ -23,47 +23,44 @@ export function BreakingStrip({ articles }: BreakingStripProps) {
   };
 
   return (
-    <div className="bg-background border-b-2 border-primary overflow-hidden relative flex h-10 w-full">
-      <div className="bg-primary text-primary-foreground font-bold px-3 md:px-6 py-2.5 text-xs tracking-wider uppercase flex items-center whitespace-nowrap z-10 shadow-[4px_0_8px_rgba(0,0,0,0.1)] shrink-0">
-        <span className="mr-2 h-2 w-2 rounded-full bg-white animate-pulse"></span>
+    <div className="bg-background dark:bg-zinc-950 border-b border-primary/20 overflow-hidden relative flex h-12 w-full shadow-sm z-20 group/ticker">
+      {/* Dynamic Breaking Badge */}
+      <div className="relative bg-gradient-to-br from-primary via-[#d41f16] to-[#af1912] text-white font-black px-6 md:px-10 py-2.5 text-[11px] tracking-[0.25em] uppercase flex items-center whitespace-nowrap z-30 shadow-[10px_0_25px_-5px_rgba(0,0,0,0.3)] shrink-0 italic overflow-hidden">
+        {/* Shimmer Effect */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/ticker:animate-[shimmer_2s_infinite] pointer-events-none" />
+        
+        <span className="mr-4 flex h-2.5 w-2.5 relative">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]"></span>
+        </span>
         {t('breaking')}
       </div>
 
-      <div className="flex-1 overflow-hidden relative flex items-center bg-secondary/30">
+      <div className="flex-1 overflow-hidden relative flex items-center bg-secondary/10 backdrop-blur-sm">
+        {/* Edge Fade Masks */}
+        <div className="absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-secondary/20 to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-background via-background/80 to-transparent z-10 pointer-events-none" />
+
         <div
           ref={scrollRef}
-          className="flex animate-ticker-seamless whitespace-nowrap w-max hover:[animation-play-state:paused] items-center"
+          className="flex animate-ticker-seamless whitespace-nowrap w-max hover:[animation-play-state:paused] items-center py-1"
         >
-          {/* First set */}
-          {items.map((news, index) => (
-            <div key={news.id} className="flex items-center">
-              {index > 0 && (
-                <span className="text-primary/40 mx-1">•</span>
-              )}
-              <Link
-                href={`/article/${news.slug}`}
-                className={`text-sm font-medium text-foreground hover:text-primary transition-colors px-5 ${language === 'hi' ? 'font-hindi' : ''}`}
-              >
-                {getDisplayTitle(news)}
-              </Link>
-            </div>
-          ))}
-
-          {/* Spacer bullet between sets */}
-          <span className="text-primary/40 mx-1">•</span>
-
-          {/* Cloned second set for seamless wrap-around */}
-          {items.map((news, index) => (
-            <div key={`clone-${news.id}`} className="flex items-center">
-              {index > 0 && (
-                <span className="text-primary/40 mx-1">•</span>
-              )}
-              <Link
-                href={`/article/${news.slug}`}
-                className={`text-sm font-medium text-foreground hover:text-primary transition-colors px-5 ${language === 'hi' ? 'font-hindi' : ''}`}
-              >
-                {getDisplayTitle(news)}
-              </Link>
+          {/* Loop items 3 times for super seamless feel */}
+          {[...Array(3)].map((_, loopIdx) => (
+            <div key={`loop-${loopIdx}`} className="flex items-center">
+              {items.map((news) => (
+                <div key={`${loopIdx}-${news.id}`} className="flex items-center">
+                  <span className="text-primary/30 mx-2 text-xs font-bold">//</span>
+                  <Link
+                    href={`/article/${news.slug}`}
+                    className={`group/item flex items-center gap-2 text-[13px] font-bold text-foreground/80 hover:text-primary transition-all px-4 ${language === 'hi' ? 'font-hindi text-base' : 'font-sans'}`}
+                  >
+                    <span className="opacity-0 group-hover/item:opacity-100 transition-opacity text-primary -ml-4 mr-2">▶</span>
+                    {getDisplayTitle(news)}
+                    <span className="ml-2 text-[9px] font-black bg-primary/10 text-primary px-1.5 py-0.5 rounded-sm opacity-60 group-hover/item:opacity-100 transition-all uppercase tracking-tighter">New</span>
+                  </Link>
+                </div>
+              ))}
             </div>
           ))}
         </div>

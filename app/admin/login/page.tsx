@@ -3,8 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { auth } from '@/lib/firebase';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { createSession } from '@/lib/actions/auth-actions';
 
 export default function AdminLoginPage() {
@@ -13,7 +11,6 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isSignUp, setIsSignUp] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,36 +18,17 @@ export default function AdminLoginPage() {
     setLoading(true);
 
     try {
-      let userCredential;
-      
-      if (isSignUp) {
-        userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      } else {
-        userCredential = await signInWithEmailAndPassword(auth, email, password);
-      }
-
-      const idToken = await userCredential.user.getIdToken();
-      const result = await createSession(idToken);
+      const result = await createSession(email, password);
 
       if (result.success) {
         router.push('/admin');
-        router.refresh(); // Ensure layout components see the new cookie
+        router.refresh();
       } else {
-        throw new Error(result.error || 'Failed to create session');
+        setError(result.error || 'Authentication failed');
       }
     } catch (err: any) {
       console.error('[Login] Auth error:', err);
-      let message = 'Authentication failed';
-      
-      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
-        message = 'Invalid email or password';
-      } else if (err.code === 'auth/email-already-in-use') {
-        message = 'Email already in use';
-      } else if (err.code === 'auth/weak-password') {
-        message = 'Password should be at least 6 characters';
-      }
-      
-      setError(message);
+      setError('Authentication failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -66,7 +44,7 @@ export default function AdminLoginPage() {
 
         <div className="bg-white border border-border rounded-lg p-8 shadow-sm">
           <h2 className="font-serif text-2xl font-bold text-foreground mb-6 text-center">
-            {isSignUp ? 'Create Account' : 'Sign In'}
+            Sign In
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -111,21 +89,9 @@ export default function AdminLoginPage() {
               disabled={loading}
               className="w-full px-4 py-3 bg-primary text-primary-foreground font-medium rounded-sm hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
-              {loading ? 'Loading...' : isSignUp ? 'Create Account' : 'Sign In'}
+              {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-muted-foreground">
-              {isSignUp ? 'Already have an account?' : "Don&apos;t have an account?"}{' '}
-              <button
-                onClick={() => setIsSignUp(!isSignUp)}
-                className="text-primary hover:text-primary/80 font-medium"
-              >
-                {isSignUp ? 'Sign In' : 'Create Account'}
-              </button>
-            </p>
-          </div>
         </div>
 
         <div className="mt-6 text-center">

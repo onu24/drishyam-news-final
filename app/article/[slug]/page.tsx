@@ -8,6 +8,7 @@ import { ShareButtons } from '@/components/article/ShareButtons';
 import { ArticleImageGallery } from '@/components/article/ArticleImageGallery';
 import { ReadingProgress } from '@/components/article/ReadingProgress';
 import { TableOfContents } from '@/components/article/TableOfContents';
+import { RelatedEngagement } from '@/components/article/RelatedEngagement';
 import { 
   getArticleBySlug, 
   getAuthorById, 
@@ -181,6 +182,9 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                   ))}
                 </div>
               )}
+
+              {/* Related, History & Discovery */}
+              <RelatedEngagement currentArticle={article} />
             </div>
 
             {/* Right Sidebar (~30% / 4 grid cols) */}

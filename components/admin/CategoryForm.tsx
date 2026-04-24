@@ -59,7 +59,14 @@ export function CategoryForm({ category, onClose, onSuccess }: CategoryFormProps
     e.preventDefault();
     setError(null);
 
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      setError('Please fix the highlighted fields before saving.');
+      const formEl = e.currentTarget as HTMLElement;
+      formEl.closest('.overflow-hidden')?.scrollTo({ top: 0, behavior: 'smooth' });
+      // Fallback for full page
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
 
     setLoading(true);
 

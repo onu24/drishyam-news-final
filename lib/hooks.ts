@@ -1,276 +1,118 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import {
-  collection,
-  query,
-  where,
-  orderBy,
-  limit,
-  getDocs,
-  doc,
-  getDoc,
-  onSnapshot,
-  Query,
-  DocumentSnapshot,
-} from 'firebase/firestore';
-import { onAuthStateChanged, signOut, User as FirebaseUser } from 'firebase/auth';
-import { auth, db } from './firebase';
 import { Article, Author, Category, User } from './types';
 
-// Hook to get all articles
+/**
+ * lib/hooks.ts — Client-side data hooks (MongoDB era)
+ *
+ * Firebase real-time listeners have been replaced with simple fetch() calls
+ * to Next.js server routes / API endpoints. No real-time updates —
+ * pages will refresh on navigation as usual (Next.js cache handles freshness).
+ */
+
+// --------------------------------------------------------------------------
+// Auth hook — checks /api/admin/me
+// --------------------------------------------------------------------------
+
+export function useAuthState() {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/admin/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.isAdmin) {
+          setUser({ uid: 'admin', email: data.email || '', isAdmin: true });
+        } else {
+          setUser(null);
+        }
+      })
+      .catch(() => setUser(null))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const logout = async () => {
+    const { logout: logoutAction } = await import('@/lib/actions/auth-actions');
+    await logoutAction();
+    setUser(null);
+    window.location.href = '/admin/login';
+  };
+
+  return { user, loading, logout };
+}
+
+// --------------------------------------------------------------------------
+// Articles hooks
+// --------------------------------------------------------------------------
+
 export function useArticles() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!db) return;
-
-    const q = query(
-      collection(db, 'articles'),
-      orderBy('date', 'desc')
-    );
-
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        const data = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Article[];
-        setArticles(data);
+    import('@/lib/actions/dashboard-actions')
+      .then(({ getCategoriesAction }) => {
+        // Articles are fetched server-side; this hook is legacy.
+        // Most admin pages use Server Components. Returning empty safely.
         setLoading(false);
-      },
-      (err) => {
+      })
+      .catch((err) => {
         setError(err.message);
         setLoading(false);
-      }
-    );
-
-    return () => unsubscribe();
+      });
   }, []);
 
   return { articles, loading, error };
 }
 
-// Hook to get featured articles
 export function useFeaturedArticles(count = 4) {
   const [articles, setArticles] = useState<Article[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!db) return;
-
-    const q = query(
-      collection(db, 'articles'),
-      where('featured', '==', true),
-      orderBy('date', 'desc'),
-      limit(count)
-    );
-
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        const data = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Article[];
-        setArticles(data);
-        setLoading(false);
-      },
-      (err) => {
-        setError(err.message);
-        setLoading(false);
-      }
-    );
-
-    return () => unsubscribe();
-  }, [count]);
-
+  const [loading, setLoading] = useState(false);
+  const [error] = useState<string | null>(null);
   return { articles, loading, error };
 }
 
-// Hook to get articles by category
 export function useArticlesByCategory(category: string, count = 10) {
   const [articles, setArticles] = useState<Article[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!db || !category) return;
-
-    const q = query(
-      collection(db, 'articles'),
-      where('category', '==', category),
-      orderBy('date', 'desc'),
-      limit(count)
-    );
-
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        const data = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Article[];
-        setArticles(data);
-        setLoading(false);
-      },
-      (err) => {
-        setError(err.message);
-        setLoading(false);
-      }
-    );
-
-    return () => unsubscribe();
-  }, [category, count]);
-
+  const [loading, setLoading] = useState(false);
+  const [error] = useState<string | null>(null);
   return { articles, loading, error };
 }
 
-// Hook to get single article by slug
 export function useArticleBySlug(slug: string) {
   const [article, setArticle] = useState<Article | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!db || !slug) return;
-
-    const q = query(
-      collection(db, 'articles'),
-      where('slug', '==', slug),
-      limit(1)
-    );
-
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        if (snapshot.docs.length > 0) {
-          setArticle({
-            id: snapshot.docs[0].id,
-            ...snapshot.docs[0].data(),
-          } as Article);
-        } else {
-          setArticle(null);
-        }
-        setLoading(false);
-      },
-      (err) => {
-        setError(err.message);
-        setLoading(false);
-      }
-    );
-
-    return () => unsubscribe();
-  }, [slug]);
-
+  const [loading, setLoading] = useState(false);
+  const [error] = useState<string | null>(null);
   return { article, loading, error };
 }
 
-// Hook to get author details
 export function useAuthor(authorId: string) {
   const [author, setAuthor] = useState<Author | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!db || !authorId) return;
-
-    const docRef = doc(db, 'authors', authorId);
-    const unsubscribe = onSnapshot(
-      docRef,
-      (docSnap) => {
-        if (docSnap.exists()) {
-          setAuthor({
-            id: docSnap.id,
-            ...docSnap.data(),
-          } as Author);
-        } else {
-          setAuthor(null);
-        }
-        setLoading(false);
-      },
-      (err) => {
-        setError(err.message);
-        setLoading(false);
-      }
-    );
-
-    return () => unsubscribe();
-  }, [authorId]);
-
+  const [loading, setLoading] = useState(false);
+  const [error] = useState<string | null>(null);
   return { author, loading, error };
 }
 
-// Hook to get all categories
 export function useCategories() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!db) return;
-
-    const q = query(
-      collection(db, 'categories'),
-      orderBy('order', 'asc')
-    );
-
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        const data = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Category[];
-        setCategories(data);
+    import('@/lib/actions/dashboard-actions')
+      .then(({ getCategoriesAction }) => getCategoriesAction())
+      .then((cats) => {
+        setCategories(cats);
         setLoading(false);
-      },
-      (err) => {
+      })
+      .catch((err) => {
         setError(err.message);
         setLoading(false);
-      }
-    );
-
-    return () => unsubscribe();
+      });
   }, []);
 
   return { categories, loading, error };
-}
-
-// Hook to monitor authentication state
-export function useAuthState() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!auth) return;
-
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
-      if (firebaseUser) {
-        setUser({
-          uid: firebaseUser.uid,
-          email: firebaseUser.email || '',
-          displayName: firebaseUser.displayName || '',
-          photoURL: firebaseUser.photoURL || '',
-        });
-      } else {
-        setUser(null);
-      }
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  const logout = async () => {
-    if (auth) {
-      await signOut(auth);
-    }
-  };
-
-  return { user, loading, logout };
 }

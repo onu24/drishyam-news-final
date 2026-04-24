@@ -68,6 +68,7 @@ export function ArticleHeader({ article, author }: ArticleHeaderProps) {
                 className="object-cover group-hover:scale-[1.01] transition-transform duration-1000"
                 priority
                 loading="eager"
+                unoptimized={article.coverImage.includes('cloudinary')}
               />
               <div className="absolute bottom-4 right-4 bg-black/70 backdrop-blur-sm text-white text-[9px] font-bold px-3 py-1.5 uppercase tracking-widest rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
                  Media Archive / Drishyam News Network

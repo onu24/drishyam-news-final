@@ -7,6 +7,7 @@ import { slugify } from '@/lib/utils';
 import { createVisualStoryAction, updateVisualStoryAction } from '@/lib/actions/dashboard-actions';
 import { ImageUpload } from './ImageUpload';
 import { AlertCircle, CheckCircle2, ImagePlus, Loader2, PlusCircle, Save, Trash2, Video } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface StoryFormProps {
   story?: VisualStory;
@@ -156,6 +157,7 @@ export function StoryForm({ story }: StoryFormProps) {
     if (isUploadingCover || uploadingSlideIndex !== null) return;
     if (!validateForm()) {
       setError('Please fix the highlighted fields before saving.');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
 
@@ -355,11 +357,24 @@ export function StoryForm({ story }: StoryFormProps) {
                             value={slide.video}
                             onChange={(e) => handleSlideChange(index, 'video', e.target.value)}
                             className="w-full bg-background p-3 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 border-border"
-                            placeholder="Video URL (.mp4, .webm)"
+                            placeholder="Cloudinary or MP4 URL"
                           />
                         </div>
-                        <label className="p-2 border border-border rounded-lg cursor-pointer hover:bg-secondary transition-colors" title="Upload Video">
-                          <Video size={18} className={uploadingSlideIndex === index ? 'animate-pulse text-primary' : ''} />
+                        <label 
+                          className={cn(
+                            "p-2 border border-border rounded-lg cursor-pointer hover:bg-secondary transition-all flex items-center gap-2",
+                            uploadingSlideIndex === index && "bg-primary/5 border-primary/30"
+                          )} 
+                          title="Upload Video to Cloudinary"
+                        >
+                          {uploadingSlideIndex === index ? (
+                            <Loader2 size={18} className="animate-spin text-primary" />
+                          ) : (
+                            <Video size={18} className="text-muted-foreground" />
+                          )}
+                          <span className="text-[10px] font-black uppercase tracking-widest sm:inline hidden">
+                            {uploadingSlideIndex === index ? 'Uploading...' : 'Upload'}
+                          </span>
                           <input
                             type="file"
                             accept="video/mp4,video/webm,video/ogg,video/quicktime"

@@ -1,41 +1,30 @@
-// import { cookies } from 'next/headers';
-// import { redirect } from 'next/navigation';
-// import { adminAuth } from '@/lib/firebase-admin';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { verifyAdminJwt, COOKIE_NAME } from '@/lib/auth';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 
 /**
- * AdminLayout.tsx — Auth-Bypassed Shell
+ * AdminLayout — JWT-authenticated shell
  *
- * Current state: AUTH DEACTIVATED for direct development access.
- * To re-enable, un-comment the redirect logic and cryptographic verification below.
+ * Verifies the drishyam_admin_session cookie on every request.
+ * Redirects to /admin/login if missing or invalid.
  */
-
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // const cookieStore = await cookies();
-  // const session = cookieStore.get('drishyam_admin_session')?.value;
+  const cookieStore = await cookies();
+  const token = cookieStore.get(COOKIE_NAME)?.value;
 
-  // // 1. Initial redirect if cookie is missing
-  // if (!session) {
-  //   redirect('/admin/login');
-  // }
+  if (!token) {
+    redirect('/admin/login');
+  }
 
-  // try {
-  //   // 2. CRYPTOGRAPHIC VERIFICATION
-  //   // This ensures someone hasn't just manually set a fake cookie.
-  //   const decodedClaims = await adminAuth().verifySessionCookie(session, true);
-    
-  //   // Optional: Log the admin access
-  //   // console.log(`[Admin Access] ${decodedClaims.email} on ${new Date().toISOString()}`);
-
-  // } catch (error) {
-  //   console.error('[Admin Layout] Session verification failed:', error);
-  //   // 3. Clear the invalid cookie and redirect
-  //   redirect('/admin/login');
-  // }
+  const payload = await verifyAdminJwt(token);
+  if (!payload) {
+    redirect('/admin/login');
+  }
 
   return (
     <div className="flex h-screen bg-secondary/20 md:overflow-auto text-foreground">

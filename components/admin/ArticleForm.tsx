@@ -58,7 +58,7 @@ export function ArticleForm({ article, availableCategories = [], availableAuthor
     excerpt: article?.excerpt || '',
     content: article?.content || '',
     contentFont: (article?.contentFont || 'serif') as ArticleContentFont,
-    status: (article?.status || 'draft') as ArticleStatus,
+    status: (article?.status || 'published') as ArticleStatus,
     featured: article?.featured || false,
     articleType: (article?.articleType || 'standard') as Article['articleType'],
     tags: article?.tags?.join(', ') || '',

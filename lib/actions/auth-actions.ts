@@ -1,51 +1,47 @@
 'use server';
 
 import { cookies } from 'next/headers';
-import { adminAuth } from '../firebase-admin';
+import {
+  signAdminJwt,
+  verifyAdminCredentials,
+  COOKIE_NAME,
+  SESSION_DURATION_SECONDS,
+} from '../auth';
 
 /**
- * auth-actions.ts — Server-side Auth logic for Next.js 15+
+ * auth-actions.ts — Server-side Auth logic
  *
- * This file contains server actions for creating and destroying 
- * secure admin sessions.
+ * Validates admin credentials against ADMIN_EMAIL + ADMIN_PASSWORD env vars.
+ * On success, issues a signed JWT stored as an HTTP-only cookie.
  */
 
-export async function createSession(idToken: string) {
-  const cookieStore = await cookies();
-  
+export async function createSession(email: string, password: string) {
   try {
-    // 1. Verify the ID token using the Admin SDK
-    const decodedToken = await adminAuth().verifyIdToken(idToken);
-    
-    if (decodedToken) {
-      // 2. Clear previous session
-      cookieStore.delete('drishyam_admin_session');
-      
-      // 3. Create a Firebase session cookie (valid for 5 days)
-      const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 days
-      const sessionCookie = await adminAuth().createSessionCookie(idToken, { expiresIn });
-      
-      // 4. Set the HTTP-only, secure cookie
-      cookieStore.set('drishyam_admin_session', sessionCookie, {
-        maxAge: expiresIn / 1000,
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        path: '/',
-        sameSite: 'lax',
-      });
-      
-      return { success: true };
+    const valid = verifyAdminCredentials(email, password);
+    if (!valid) {
+      return { success: false, error: 'Invalid email or password' };
     }
+
+    const token = await signAdminJwt({ email, role: 'admin' });
+    const cookieStore = await cookies();
+
+    cookieStore.set(COOKIE_NAME, token, {
+      maxAge: SESSION_DURATION_SECONDS,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+      sameSite: 'lax',
+    });
+
+    return { success: true };
   } catch (error) {
     console.error('[Auth Action] Session creation failed:', error);
     return { success: false, error: 'Failed to create session' };
   }
-  
-  return { success: false, error: 'Invalid token' };
 }
 
 export async function logout() {
   const cookieStore = await cookies();
-  cookieStore.delete('drishyam_admin_session');
+  cookieStore.delete(COOKIE_NAME);
   return { success: true };
 }

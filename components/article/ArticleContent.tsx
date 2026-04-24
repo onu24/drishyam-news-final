@@ -1,8 +1,12 @@
 'use client';
 
+import React from 'react';
 import { CheckCircle2 } from 'lucide-react';
 import { ArticleContentFont } from '@/lib/types';
 import { useLanguage } from '@/components/providers/LanguageProvider';
+import { Reveal } from '@/components/animations/Reveal';
+import { InlineEngagement } from './InlineEngagement';
+import Link from 'next/link';
 
 interface ArticleContentProps {
   content?: string;
@@ -35,8 +39,8 @@ export function ArticleContent({ content, content_hi, keyPoints, articleType, co
   const fontClass = language === 'hi' ? 'font-hindi' : (FONT_CLASS_MAP[contentFont] || FONT_CLASS_MAP.serif);
 
   return (
-    <div className="max-w-[700px] mx-auto">
-      <div className="prose prose-lg max-w-none prose-headings:font-serif prose-headings:text-foreground prose-p:text-foreground/90 prose-p:leading-[1.7] prose-p:mb-8 prose-a:text-primary prose-strong:text-foreground">
+    <div className="max-w-[700px] mx-auto break-words">
+      <div className="prose prose-lg max-w-none prose-headings:font-serif prose-headings:text-foreground prose-p:text-foreground/90 prose-p:leading-[1.8] prose-p:mb-8 prose-a:text-primary prose-strong:text-foreground prose-a:break-all">
         
         {/* Key Points for Explainers */}
         {articleType === 'explainer' && keyPoints && keyPoints.length > 0 && (
@@ -69,13 +73,14 @@ export function ArticleContent({ content, content_hi, keyPoints, articleType, co
                 const id = text.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_]+/g, '-');
                 
                 return (
-                  <HeadingTag 
-                    key={index} 
-                    id={id}
-                    className={`mt-14 mb-6 ${fontClass} font-bold text-foreground tracking-tight scroll-mt-24`}
-                  >
-                    {text}
-                  </HeadingTag>
+                  <Reveal key={index}>
+                    <HeadingTag 
+                      id={id}
+                      className={`mt-14 mb-6 ${fontClass} font-bold text-foreground tracking-tight scroll-mt-24`}
+                    >
+                      {text}
+                    </HeadingTag>
+                  </Reveal>
                 );
             }
           }
@@ -84,17 +89,57 @@ export function ArticleContent({ content, content_hi, keyPoints, articleType, co
           if (paragraph.startsWith('>')) {
             const text = paragraph.replace(/^>\s/, '');
             return (
-              <blockquote key={index} className={`border-l-4 border-primary pl-8 py-2 my-12 italic text-2xl sm:text-3xl ${fontClass} text-muted-foreground leading-relaxed font-serif`}>
-                {text}
-              </blockquote>
+              <Reveal key={index}>
+                <blockquote className={`border-l-4 border-primary pl-8 py-2 my-12 italic text-2xl sm:text-3xl ${fontClass} text-muted-foreground leading-relaxed font-serif`}>
+                  {text}
+                </blockquote>
+              </Reveal>
             );
           }
 
-          // Regular paragraph
+  // Regular paragraph with internal linking
+          const linkifyKeywords = (text: string) => {
+            const keywords = [
+              { word: 'India', slug: '/category/india' },
+              { word: 'Politics', slug: '/category/politics' },
+              { word: 'Economy', slug: '/category/economy' },
+              { word: 'Technology', slug: '/category/technology' },
+              { word: 'Entertainment', slug: '/category/entertainment' },
+            ];
+
+            let content = text;
+            keywords.forEach(({ word, slug }) => {
+              const regex = new RegExp(`\\b${word}\\b`, 'g');
+              content = content.replace(regex, `<a href="${slug}" class="text-primary font-bold hover:underline">${word}</a>`);
+            });
+            return content;
+          };
+
           return (
-            <p key={index} className={`text-xl leading-[1.7] text-foreground/90 mb-8 ${fontClass} selection:bg-primary/20`}>
-              {paragraph}
-            </p>
+            <React.Fragment key={index}>
+              <Reveal>
+                <p 
+                  className={`text-xl leading-[1.7] text-foreground/90 mb-8 ${fontClass} selection:bg-primary/20`}
+                  dangerouslySetInnerHTML={{ __html: linkifyKeywords(paragraph) }}
+                />
+              </Reveal>
+
+              {/* Inject Inline Engagement Blocks */}
+              {index === 1 && (
+                <InlineEngagement 
+                  type="explainer" 
+                  title="Explainer: Understanding the broader context of this development" 
+                  slug="understanding-the-broader-context" 
+                />
+              )}
+              {index === 4 && (
+                <InlineEngagement 
+                  type="visual-story" 
+                  title="Visual Story: See the full timeline through photos" 
+                  slug="full-timeline-visual" 
+                />
+              )}
+            </React.Fragment>
           );
         })}
       </div>

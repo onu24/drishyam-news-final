@@ -27,85 +27,119 @@ export function HeroLatestSection({ leadArticle, latestArticles }: HeroLatestSec
     : (leadArticle.excerpt || leadArticle.excerpt_hi || (language === 'hi' ? 'आज की महत्वपूर्ण खबर का संपादन विश्लेषण। दृश्यम न्यूज़ पर विस्तृत कवरेज।' : "Editorial analysis of today's developing story. Comprehensive coverage on Drishyam News."));
 
   return (
-    <section className="bg-white border-b-4 border-black/5 py-8 sm:py-12">
+    <section className="bg-white dark:bg-zinc-950 border-b-8 border-secondary/30 py-8 sm:py-16 selection:bg-primary/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-10">
+        <div className="flex flex-col gap-12">
           
           {/* Main Editorial Block */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
             
             {/* Lead Story: Dominant & Authoritative */}
-            <div className="lg:col-span-8 flex flex-col group">
-              <Link href={`/article/${leadArticle.slug}`} className="cursor-pointer block space-y-6">
-                <div className="relative aspect-[16/9] w-full overflow-hidden rounded-sm bg-zinc-100 shadow-sm border border-zinc-200">
+            <div className="lg:col-span-8 flex flex-col group/lead">
+              <Link href={`/article/${leadArticle.slug}`} className="cursor-pointer block space-y-8">
+                <div className="relative aspect-[16/10] w-full overflow-hidden rounded-md bg-zinc-100 dark:bg-zinc-900 shadow-2xl border border-border/40">
+                  {/* Premium Vignette Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent z-10 pointer-events-none" />
+                  
                   {leadArticle.coverImage ? (
                       <Image
                         src={leadArticle.coverImage}
                         alt={leadTitle}
                         fill
-                        className="object-cover group-hover:scale-[1.01] transition-transform duration-1000"
+                        className="object-cover group-hover/lead:scale-[1.02] transition-transform duration-[1.5s] ease-out-quint"
                         priority
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 66vw"
                       />
                   ) : (
-                    <div className="w-full h-full bg-zinc-200" />
+                    <div className="w-full h-full bg-zinc-200 dark:bg-zinc-800 animate-pulse" />
                   )}
-                  <div className="absolute top-6 left-6">
-                    <span className="bg-black text-white text-[10px] font-bold px-3 py-1.5 uppercase tracking-widest rounded-sm shadow-2xl">
-                      {language === 'hi' ? (leadArticle.category || 'न्यूज़') : (leadArticle.category || 'NEWS')}
-                    </span>
+                  
+                  {/* Category Badge - Premium Style */}
+                  <div className="absolute top-6 left-6 z-20">
+                    <div className="relative">
+                      <div className="absolute -inset-1 bg-white/20 blur-sm rounded-full" />
+                      <span className="relative bg-white dark:bg-zinc-950 text-black dark:text-white text-[10px] font-black px-4 py-2 uppercase tracking-[0.2em] rounded-sm shadow-xl">
+                        {language === 'hi' ? (leadArticle.category || 'न्यूज़') : (leadArticle.category || 'NEWS')}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <h1 className={`font-serif text-4xl sm:text-6xl lg:text-[4.8rem] font-bold leading-[0.95] tracking-tight text-foreground group-hover:text-primary transition-colors [text-wrap:balance] ${language === 'hi' ? 'font-hindi' : ''}`}>
+                <div className="space-y-6">
+                  <h1 className={`font-serif text-4xl sm:text-6xl lg:text-[5.4rem] font-black leading-[0.9] tracking-tight text-foreground group-hover/lead:text-primary transition-colors duration-500 [text-wrap:balance] ${language === 'hi' ? 'font-hindi-serif leading-[1.1] font-black' : ''}`}>
                     {leadTitle}
                   </h1>
-                  <p className={`text-xl sm:text-2xl text-muted-foreground font-serif leading-relaxed italic border-l-4 border-primary/20 pl-8 my-6 ${language === 'hi' ? 'font-hindi' : ''}`}>
-                    {leadExcerpt}
-                  </p>
-                  <div className="flex items-center text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] pt-2">
-                    <span className="text-black">{t('made_for_india')}</span>
-                    <span className="mx-3 text-zinc-300">•</span>
-                    <span>{formatDate(leadArticle.createdAt)}</span>
-                    <span className="mx-3 text-zinc-300">•</span>
-                    <span className="text-primary/80">{t('top_stories')}</span>
+                  <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-10">
+                    <p className={`flex-1 text-xl sm:text-[1.35rem] text-muted-foreground/90 font-serif leading-relaxed italic border-l-[6px] border-primary/30 dark:border-primary/50 pl-8 my-2 ${language === 'hi' ? 'font-hindi' : ''}`}>
+                      {leadExcerpt}
+                    </p>
+                    <div className="shrink-0 flex flex-col items-start text-[10px] sm:text-[11px] font-bold text-muted-foreground uppercase tracking-[0.25em] pt-4 gap-2 border-t sm:border-t-0 sm:border-l border-zinc-100 dark:border-zinc-800 sm:pl-8">
+                      <div className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                        <span className="text-foreground">{t('made_for_india')}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                         <span className="w-1.5 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+                         <span>{formatDate(leadArticle.createdAt)}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                         <span className="w-1.5 h-1.5 rounded-full bg-primary/40" />
+                         <span className="text-primary/80">{t('top_stories')}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </Link>
             </div>
 
-            {/* Sidebar: Latest & Curated News */}
-            <div className="lg:col-span-4 flex flex-col h-full border-t lg:border-t-0 lg:border-l border-zinc-200 pt-8 lg:pt-0 lg:pl-12">
-              <div className="flex items-center justify-between mb-8 pb-3 border-b-2 border-black">
-                <h3 className="font-bold text-xl uppercase tracking-tighter text-foreground flex items-center">
-                  <span className="w-2.5 h-2.5 bg-primary mr-2 transform rotate-45" />
+            {/* Sidebar: Premium Feeds List */}
+            <div className="lg:col-span-4 flex flex-col h-full border-t-2 lg:border-t-0 lg:border-l border-zinc-100 dark:border-zinc-900 pt-10 lg:pt-0 lg:pl-12">
+              <div className="flex items-center justify-between mb-10 pb-4 border-b border-zinc-200 dark:border-zinc-800">
+                <h3 className="font-black text-2xl uppercase tracking-tighter text-foreground flex items-center group/title cursor-default">
+                  <span className="w-3 h-3 bg-primary mr-3 transform rotate-45 group-hover/title:rotate-[225deg] transition-transform duration-500" />
                   {t('top_feeds')}
                 </h3>
-                <Link href="/latest" className="text-[10px] font-black uppercase tracking-widest hover:text-primary transition-colors">
-                  {t('live')} →
+                <Link href="/latest" className="group/live flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary/80 hover:text-primary transition-colors">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                  </span>
+                  {t('live')}
                 </Link>
               </div>
               
-              <div className="flex flex-col gap-6 divide-y divide-zinc-100">
-                {latestArticles.slice(0, 5).map((article) => {
+              <div className="flex flex-col gap-0 divide-y divide-zinc-100 dark:divide-zinc-900">
+                {latestArticles.slice(0, 5).map((article, index) => {
                   const displayTitle = (language === 'hi' && article.title_hi) ? article.title_hi : article.title;
+                  const itemIndex = (index + 1).toString().padStart(2, '0');
+                  
                   return (
                     <Link 
                       key={article.id} 
                       href={`/article/${article.slug}`} 
-                      className="group pt-6 first:pt-0 block"
+                      className="group/item py-8 first:pt-0 block hover-lift"
                     >
-                      <div className="flex flex-col gap-2">
-                         <span className="text-[10px] font-extrabold text-primary/80 uppercase tracking-widest">
-                            {language === 'hi' ? (article.category || 'न्यूज़') : (article.category || 'NEWS')}
-                         </span>
-                         <h4 className={`font-serif text-[1.2rem] font-bold leading-tight group-hover:text-primary transition-colors line-clamp-3 ${language === 'hi' ? 'font-hindi' : ''}`}>
-                          {displayTitle}
-                        </h4>
-                        <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest mt-1">
-                          {formatDate(article.createdAt)}
-                        </p>
+                      <div className="flex gap-6 items-start">
+                        <span className="text-zinc-200 dark:text-zinc-800 font-black text-4xl font-sans tracking-tighter leading-none pt-1">
+                          {itemIndex}
+                        </span>
+                        <div className="flex flex-col gap-2.5">
+                           <span className="text-[9px] font-black text-primary/60 dark:text-primary/80 uppercase tracking-[0.25em]">
+                              {language === 'hi' ? (article.category || 'न्यूज़') : (article.category || 'NEWS')}
+                           </span>
+                           <h4 className={`font-serif text-[1.25rem] font-bold leading-tight group-hover/item:text-primary transition-colors duration-300 line-clamp-3 ${language === 'hi' ? 'font-hindi mb-1' : ''}`}>
+                            {displayTitle}
+                          </h4>
+                          <div className="flex items-center gap-2 mt-1">
+                            <p className="text-[9px] text-muted-foreground/60 font-black uppercase tracking-widest">
+                              {formatDate(article.createdAt)}
+                            </p>
+                            <span className="w-1 h-1 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+                            <p className="text-[9px] text-muted-foreground/60 font-black uppercase tracking-widest">
+                              {Math.max(1, article.readingTime || 0)} min read
+                            </p>
+                          </div>
+                        </div>
                       </div>
                     </Link>
                   );
@@ -114,9 +148,10 @@ export function HeroLatestSection({ leadArticle, latestArticles }: HeroLatestSec
               
               <Link 
                 href="/latest" 
-                className="mt-12 w-full py-4 bg-zinc-50 border border-zinc-200 rounded-sm text-center text-[11px] font-black uppercase tracking-[0.3em] hover:bg-black hover:text-white transition-all duration-300"
+                className="group/btn mt-12 w-full py-5 bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-sm text-center text-[11px] font-black uppercase tracking-[0.4em] hover:bg-primary hover:text-white hover:border-primary transition-all duration-500 overflow-hidden relative shadow-sm"
               >
-                {t('view_all')}
+                <div className="absolute inset-0 bg-white/10 -translate-y-full group-hover/btn:translate-y-0 transition-transform duration-500" />
+                <span className="relative z-10">{t('view_all')}</span>
               </Link>
             </div>
 
