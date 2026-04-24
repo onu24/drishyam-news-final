@@ -10,7 +10,7 @@ export function Navbar() {
   const pathname = usePathname();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [hoveredPath, setHoveredPath] = useState<string | null>(null);
-  
+
   const { language, t } = useLanguage();
 
   const [categories, setCategories] = useState([
@@ -47,7 +47,7 @@ export function Navbar() {
               slug: `/category/${c.slug}`
             };
           });
-          
+
           setCategories([
             { name: t('home'), slug: '/' },
             { name: t('latest'), slug: '/latest' },
@@ -66,22 +66,21 @@ export function Navbar() {
         <div className="hidden md:flex items-center px-4 sm:px-6 lg:px-8 h-12">
           <LayoutGroup id="nav-indicator">
             <div className="flex items-center gap-0.5 h-full" onMouseLeave={() => setHoveredPath(null)}>
-               {categories.map((category) => {
+              {categories.map((category) => {
                 const isActive = pathname === category.slug;
                 const isHovered = hoveredPath === category.slug;
                 const isHindi = language === 'hi';
-                
+
                 return (
                   <Link
                     key={category.slug}
                     href={category.slug}
                     onMouseEnter={() => setHoveredPath(category.slug)}
-                    className={`relative px-4 h-full flex items-center ${isHindi ? 'text-[15px] font-medium font-hindi' : 'text-[11px] font-bold uppercase tracking-widest font-sans'} transition-colors duration-300 ${
-                      isActive ? 'text-primary' : 'text-muted-foreground hover:text-primary'
-                    }`}
+                    className={`relative px-4 h-full flex items-center ${isHindi ? 'text-[15px] font-medium font-hindi' : 'text-[11px] font-bold uppercase tracking-widest font-sans'} transition-colors duration-300 ${isActive ? 'text-primary' : 'text-muted-foreground hover:text-primary'
+                      }`}
                   >
                     <span className="relative z-10">{category.name}</span>
-                    
+
                     {/* Active Indicator (Underline) */}
                     {isActive && (
                       <motion.div
@@ -116,8 +115,8 @@ export function Navbar() {
           {/* Edge Fades */}
           <div className="absolute left-0 inset-y-0 w-8 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
           <div className="absolute right-0 inset-y-0 w-12 bg-gradient-to-l from-background via-background/80 to-transparent z-10 pointer-events-none" />
-          
-          <div 
+
+          <div
             ref={scrollRef}
             className="flex items-center gap-2 overflow-x-auto no-scrollbar px-6 py-3.5"
           >
@@ -128,13 +127,11 @@ export function Navbar() {
                 <Link
                   key={category.slug}
                   href={category.slug}
-                  className={`whitespace-nowrap px-4 py-1.5 rounded-full border transition-all duration-300 active:scale-95 ${
-                    isHindi ? 'text-sm font-medium font-hindi' : 'text-[10px] font-bold uppercase tracking-wider font-sans'
-                  } ${
-                    isActive
+                  className={`whitespace-nowrap px-4 py-1.5 rounded-full border transition-all duration-300 active:scale-95 ${isHindi ? 'text-sm font-medium font-hindi' : 'text-[10px] font-bold uppercase tracking-wider font-sans'
+                    } ${isActive
                       ? 'bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/20'
                       : 'bg-secondary/50 border-transparent text-foreground/80 hover:bg-secondary hover:text-primary active:bg-secondary/80'
-                  }`}
+                    }`}
                 >
                   {category.name}
                 </Link>

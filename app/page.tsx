@@ -114,14 +114,14 @@ export default async function Home() {
     <div className="flex flex-col min-h-screen bg-white">
       <TopBar />
       <Header />
-      <BreakingStrip articles={tickerArticles} />
       
-      {/* Real-time IPL Updates - Show on Home if an IPL match is LIVE or UPCOMING */}
+      {/* Real-time IPL Updates */}
       {liveMatches.some((m: any) => (m.status === 'LIVE' || m.status === 'UPCOMING') && m.isIPL) && (
         <SportsScoreboard initialMatches={liveMatches} />
       )}
       
       <Navbar />
+      <BreakingStrip articles={tickerArticles} />
       
       <main className="flex-1 w-full space-y-4">
         {/* Above the Fold: Lead Hierarchy */}
