@@ -9,7 +9,7 @@
 import 'server-only';
 import { ObjectId } from 'mongodb';
 import { getMongoDb } from './mongodb';
-import { Article, Category, Author, DashboardStats, ArticleStatus, VisualStory, AboutPageContent } from './types';
+import { Article, Category, Author, DashboardStats, ArticleStatus, VisualStory, AboutPageContent, ContactPageContent } from './types';
 import { slugify, FALLBACK_IMAGE } from './utils';
 import { toArticle } from './data';
 
@@ -44,22 +44,29 @@ function toAboutContent(id: string, data: any): AboutPageContent {
   return {
     id,
     heroTitle: data.heroTitle || 'About Drishyam News',
+    heroTitle_hi: data.heroTitle_hi || null,
     heroSubtitle:
       data.heroSubtitle ||
       'Independent journalism for a modern India. We deliver facts, context, and clarity.',
+    heroSubtitle_hi: data.heroSubtitle_hi || null,
     profileImage: data.profileImage || '/placeholder-user.jpg',
     intro:
       data.intro ||
       'Drishyam News is a digital newsroom focused on truth-first reporting and in-depth public-interest journalism.',
+    intro_hi: data.intro_hi || null,
     story:
       data.story ||
       'From breaking headlines to explainers, our editorial process prioritizes verification, fairness, and accountability.',
+    story_hi: data.story_hi || null,
     mission: data.mission || 'To make credible journalism accessible, fast, and meaningful for every reader.',
+    mission_hi: data.mission_hi || null,
     vision: data.vision || 'To become India\u2019s most trusted digital-first news platform for informed citizens.',
+    vision_hi: data.vision_hi || null,
     values:
       Array.isArray(data.values) && data.values.length > 0
         ? data.values.map((v: any) => String(v))
         : ['Accuracy', 'Independence', 'Accountability', 'Public Interest'],
+    values_hi: Array.isArray(data.values_hi) ? data.values_hi.map((v: any) => String(v)) : null,
     updatedAt:
       data.updatedAt instanceof Date ? data.updatedAt.toISOString() : data.updatedAt ?? new Date().toISOString(),
   } as AboutPageContent;
@@ -230,6 +237,57 @@ export async function upsertAboutPageContent(data: Partial<AboutPageContent>): P
   );
   const updated = await db.collection('siteContent').findOne({ _id: 'about-us' as any });
   return toAboutContent('about-us', updated || payload);
+}
+
+// --------------------------------------------------------------------------
+// Contact Page
+// --------------------------------------------------------------------------
+
+function toContactContent(id: string, data: any): ContactPageContent {
+  return {
+    id,
+    heroTitle: data.heroTitle || 'Contact Us',
+    heroTitle_hi: data.heroTitle_hi || null,
+    heroSubtitle:
+      data.heroSubtitle ||
+      "Have a tip, a correction, or a business inquiry? We'd love to hear from you.",
+    heroSubtitle_hi: data.heroSubtitle_hi || null,
+    email:
+      data.email || 'editorial@drishyamnews.in\nbusiness@drishyamnews.in',
+    phone: data.phone || '+91 11 XXXX XXXX',
+    address: data.address || 'New Delhi, India',
+    address_hi: data.address_hi || null,
+    extraInfo: data.extraInfo || '',
+    extraInfo_hi: data.extraInfo_hi || null,
+    updatedAt:
+      data.updatedAt instanceof Date
+        ? data.updatedAt.toISOString()
+        : data.updatedAt ?? new Date().toISOString(),
+  } as ContactPageContent;
+}
+
+export async function getContactPageContent(): Promise<ContactPageContent> {
+  try {
+    const db = await getMongoDb();
+    const doc = await db.collection('siteContent').findOne({ _id: 'contact-us' as any });
+    return toContactContent('contact-us', doc || {});
+  } catch (err) {
+    console.error('[Dashboard] getContactPageContent error:', err);
+    return toContactContent('contact-us', {});
+  }
+}
+
+export async function upsertContactPageContent(data: Partial<ContactPageContent>): Promise<ContactPageContent> {
+  const db = await getMongoDb();
+  const { id: _id, ...rest } = data as any;
+  const payload = { ...rest, updatedAt: new Date() };
+  await db.collection('siteContent').updateOne(
+    { _id: 'contact-us' as any },
+    { $set: payload },
+    { upsert: true }
+  );
+  const updated = await db.collection('siteContent').findOne({ _id: 'contact-us' as any });
+  return toContactContent('contact-us', updated || payload);
 }
 
 // --------------------------------------------------------------------------

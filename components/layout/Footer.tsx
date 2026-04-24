@@ -68,10 +68,10 @@ export function Footer() {
           
           {/* Column 1: Brand & Mission */}
           <div className="space-y-6">
-            <h2 className={`text-4xl tracking-tighter ${language === 'hi' ? 'font-hindi-serif font-black' : 'font-serif font-black'}`}>
+            <h2 className={`text-4xl tracking-tighter ${language === 'hi' ? 'font-hindi-serif font-black leading-tight' : 'font-serif font-black'}`}>
               {language === 'hi' ? 'दृश्यम' : 'DRISHYAM'}<span className="text-primary italic">{language === 'hi' ? 'न्यूज़' : 'NEWS'}</span>
             </h2>
-            <p className={`text-zinc-400 text-sm leading-relaxed ${language === 'hi' ? 'font-hindi font-medium' : 'font-serif italic'} border-l-2 border-primary/40 pl-4 py-1`}>
+            <p className={`text-zinc-400 text-sm leading-relaxed ${language === 'hi' ? 'font-hindi-tiro text-base' : 'font-serif italic'} border-l-2 border-primary/40 pl-4 py-1`}>
               {t('about_drishyam')}
             </p>
             <div className="flex gap-4">
@@ -92,7 +92,7 @@ export function Footer() {
 
           {/* Column 2: Categories */}
           <div>
-            <h3 className={`text-[11px] font-black uppercase tracking-[0.25em] text-primary mb-8 ${language === 'hi' ? 'font-hindi' : ''}`}>
+            <h3 className={`mb-8 text-primary ${language === 'hi' ? 'font-hindi-label text-sm' : 'text-[11px] font-black uppercase tracking-[0.25em]'}`}>
               {t('sections')}
             </h3>
             <ul className="grid grid-cols-2 gap-y-4 gap-x-4">
@@ -100,7 +100,7 @@ export function Footer() {
                 <li key={cat.slug}>
                   <Link 
                     href={cat.slug === 'visual-stories' ? '/visual-stories' : `/category/${cat.slug}`} 
-                    className={`text-zinc-400 hover:text-white transition-all duration-300 ease-premium hover:translate-x-1.5 inline-block text-sm ${language === 'hi' ? 'font-hindi font-bold opacity-90' : 'font-bold uppercase tracking-wider'}`}
+                    className={`text-zinc-400 hover:text-white transition-all duration-300 ease-premium hover:translate-x-1.5 inline-block ${language === 'hi' ? 'font-hindi-footer-link' : 'text-sm font-bold uppercase tracking-wider'}`}
                   >
                     {cat.name}
                   </Link>
@@ -111,7 +111,7 @@ export function Footer() {
 
           {/* Column 3: Drishyam Network */}
           <div>
-            <h3 className={`text-[11px] font-black uppercase tracking-[0.25em] text-primary mb-8 ${language === 'hi' ? 'font-hindi' : ''}`}>
+            <h3 className={`mb-8 text-primary ${language === 'hi' ? 'font-hindi-label text-sm' : 'text-[11px] font-black uppercase tracking-[0.25em]'}`}>
               {t('company')}
             </h3>
             <ul className="space-y-4">
@@ -119,7 +119,7 @@ export function Footer() {
                 <li key={item.name}>
                   <Link 
                     href={item.href} 
-                    className={`text-zinc-400 hover:text-white transition-all duration-300 ease-premium hover:translate-x-1.5 inline-block text-sm ${language === 'hi' ? 'font-hindi font-bold opacity-90' : 'font-medium'}`}
+                    className={`text-zinc-400 hover:text-white transition-all duration-300 ease-premium hover:translate-x-1.5 inline-block ${language === 'hi' ? 'font-hindi-footer-link' : 'text-sm font-medium'}`}
                   >
                     {item.name}
                   </Link>
@@ -130,10 +130,10 @@ export function Footer() {
 
           {/* Column 4: Newsletter */}
           <div className="space-y-6">
-            <h3 className={`text-[11px] font-black uppercase tracking-[0.25em] text-primary mb-8 ${language === 'hi' ? 'font-hindi' : ''}`}>
+            <h3 className={`mb-8 text-primary ${language === 'hi' ? 'font-hindi-label text-sm' : 'text-[11px] font-black uppercase tracking-[0.25em]'}`}>
               {mounted ? t('daily_briefing') : TRANSLATIONS.hi.daily_briefing}
             </h3>
-            <p className={`text-zinc-400 leading-relaxed ${language === 'hi' ? 'font-hindi text-sm opacity-80' : 'text-xs uppercase tracking-widest font-bold'}`}>
+            <p className={`text-zinc-400 leading-relaxed ${language === 'hi' ? 'font-hindi-tiro text-base opacity-85' : 'text-xs uppercase tracking-widest font-bold'}`}>
               {mounted ? t('newsletter_intro') : TRANSLATIONS.hi.newsletter_intro}
             </p>
             <div className="flex flex-col gap-3">
@@ -148,13 +148,13 @@ export function Footer() {
                <button
                  onClick={handleSubscribe}
                  suppressHydrationWarning
-                 className={`group/sub relative w-full bg-primary py-4 text-white hover:bg-white hover:text-zinc-950 transition-all duration-500 overflow-hidden active:scale-95 shadow-xl ${language === 'hi' ? 'font-hindi text-lg pt-3' : 'text-[11px] font-black uppercase tracking-[0.3em]'}`}
+                 className={`group/sub relative w-full bg-primary py-4 text-white hover:bg-white hover:text-zinc-950 transition-all duration-500 overflow-hidden active:scale-95 shadow-xl ${language === 'hi' ? 'font-hindi-serif text-xl font-bold pt-3' : 'text-[11px] font-black uppercase tracking-[0.3em]'}`}
                >
                   <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover/sub:translate-x-full transition-transform duration-1000 ease-in-out" />
                   <span className="relative z-10">{mounted ? t('subscribe_free') : TRANSLATIONS.hi.subscribe_free}</span>
                </button>
             </div>
-            <p className={`text-[10px] text-zinc-500 leading-relaxed ${language === 'hi' ? 'font-hindi opacity-60' : 'uppercase tracking-widest'}`}>
+            <p className={`text-[10px] text-zinc-500 leading-relaxed ${language === 'hi' ? 'font-hindi text-xs opacity-60' : 'uppercase tracking-widest'}`}>
                {mounted ? t('agree_terms') : TRANSLATIONS.hi.agree_terms}
             </p>
           </div>
@@ -163,10 +163,10 @@ export function Footer() {
 
         {/* Bottom Bar */}
         <div className="pt-10 border-t border-zinc-900 flex flex-col md:flex-row justify-between items-center gap-8">
-          <p className={`text-zinc-500 text-[11px] font-bold tracking-widest ${language === 'hi' ? 'font-hindi' : 'uppercase'}`}>
+          <p className={`text-zinc-500 font-bold ${language === 'hi' ? 'font-hindi text-sm tracking-normal' : 'text-[11px] uppercase tracking-widest'}`}>
             © {currentYear} {t('made_for_india')}
           </p>
-          <div className={`flex items-center gap-8 text-[11px] font-bold tracking-widest text-zinc-500/80 ${language === 'hi' ? 'font-hindi' : 'uppercase'}`}>
+          <div className={`flex items-center gap-8 text-zinc-500/80 ${language === 'hi' ? 'font-hindi-tiro text-sm font-medium' : 'text-[11px] font-bold uppercase tracking-widest'}`}>
              <span>{language === 'hi' ? 'दृश्यम न्यूज नेटवर्क द्वारा भारत में गर्व से निर्मित' : 'PROUDLY MADE IN INDIA BY DRISHYAM NEWS NETWORK'}</span>
           </div>
         </div>

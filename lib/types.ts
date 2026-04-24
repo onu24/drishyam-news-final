@@ -116,13 +116,38 @@ export interface VisualStory {
 export interface AboutPageContent {
   id: string;
   heroTitle: string;
+  heroTitle_hi?: string;
   heroSubtitle: string;
+  heroSubtitle_hi?: string;
   profileImage: string;
   intro: string;
+  intro_hi?: string;
   story: string;
+  story_hi?: string;
   mission: string;
+  mission_hi?: string;
   vision: string;
+  vision_hi?: string;
   values: string[];
+  values_hi?: string[];
+  updatedAt: string;
+}
+
+export interface ContactPageContent {
+  id: string;
+  /** Page hero */
+  heroTitle: string;
+  heroTitle_hi?: string;
+  heroSubtitle: string;
+  heroSubtitle_hi?: string;
+  /** Contact details shown on the left column */
+  email: string;          // e.g. "editorial@drishyamnews.in\nbusiness@drishyamnews.in"
+  phone: string;          // e.g. "+91 11 XXXX XXXX"
+  address: string;        // e.g. "New Delhi, India"
+  address_hi?: string;
+  /** Optional extra rich-text block (plain text) */
+  extraInfo: string;
+  extraInfo_hi?: string;
   updatedAt: string;
 }
 

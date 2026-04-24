@@ -28,7 +28,7 @@ export function Header() {
   return (
     <header 
       suppressHydrationWarning
-      className={`sticky top-0 z-40 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+      className={`sticky top-[36px] md:top-0 z-40 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
         scrolled 
           ? 'bg-background/90 backdrop-blur-xl shadow-lg shadow-black/5 dark:shadow-white/5 border-b border-border/50' 
           : 'bg-background border-b border-border'
@@ -41,16 +41,16 @@ export function Header() {
           
           {/* Logo Main Segment */}
           <Link href="/" className="flex-shrink-0 flex items-center gap-2 group py-2">
-            <div className="flex flex-col relative">
+            <div className="flex flex-col items-center relative text-center">
                <h1 className={`font-serif text-4xl sm:text-5xl font-black text-primary tracking-tight leading-none group-hover:scale-[1.02] transition-transform duration-300 ${language === 'hi' ? 'font-hindi-serif' : ''}`}>
                 Drishyam
               </h1>
-              <div className="flex items-center gap-2 mt-1 px-1">
-                <span className="h-[1px] flex-1 bg-border/60" />
-                <p className={`text-[10px] sm:text-[11px] font-bold text-muted-foreground tracking-[0.25em] uppercase whitespace-nowrap ${language === 'hi' ? 'font-hindi tracking-normal text-xs' : ''}`}>
+              <div className="flex items-center gap-2 mt-1.5 w-full justify-center">
+                {language !== 'hi' && <span className="h-[1px] w-4 sm:w-6 bg-border/60" />}
+                <p className={`text-[9px] sm:text-[11px] font-bold text-muted-foreground tracking-[0.2em] sm:tracking-[0.25em] uppercase whitespace-nowrap ${language === 'hi' ? 'font-hindi tracking-normal text-[10px] sm:text-xs text-primary/80' : ''}`}>
                   {t('news_analysis')}
                 </p>
-                <span className="h-[1px] flex-1 bg-border/60" />
+                {language !== 'hi' && <span className="h-[1px] w-4 sm:w-6 bg-border/60" />}
               </div>
             </div>
           </Link>

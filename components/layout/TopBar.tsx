@@ -24,7 +24,7 @@ export function TopBar() {
   });
 
   return (
-    <div className="bg-secondary/50 border-b border-border py-1.5 px-3 sm:px-4 text-[11px] sm:text-xs font-medium text-muted-foreground w-full z-50 relative">
+    <div className="bg-secondary/50 border-b border-border py-1.5 px-3 sm:px-4 text-[11px] sm:text-xs font-medium text-muted-foreground w-full z-50 sticky top-0 md:relative backdrop-blur-md">
       <div className="max-w-7xl mx-auto flex items-center justify-end sm:justify-between gap-3">
         {/* Date */}
         <div className="tracking-wide hidden sm:block font-serif italic">{mounted ? dateStr : ''}</div>

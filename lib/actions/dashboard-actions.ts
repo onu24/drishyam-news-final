@@ -28,10 +28,12 @@ import {
   getAboutPageContent,
   getAuthors,
   upsertAboutPageContent,
+  getContactPageContent,
+  upsertContactPageContent,
   createCategory,
   updateCategory
 } from '@/lib/dashboard';
-import { AboutPageContent, Article, Author, Category, VisualStory } from '@/lib/types';
+import { AboutPageContent, ContactPageContent, Article, Author, Category, VisualStory } from '@/lib/types';
 import { slugify } from '@/lib/utils';
 import { revalidatePath } from 'next/cache';
 
@@ -319,6 +321,29 @@ export async function updateAboutPageContentAction(data: Partial<AboutPageConten
     return { success: true, data: updated };
   } catch (err) {
     console.error('[Dashboard Action] About Page Update failed:', err);
+    return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };
+  }
+}
+
+/**
+ * Fetches Contact Us page content for admin editor
+ */
+export async function getContactPageContentAction() {
+  return await getContactPageContent();
+}
+
+/**
+ * Upserts Contact Us page content
+ */
+export async function updateContactPageContentAction(data: Partial<ContactPageContent>) {
+  try {
+    const updated = await upsertContactPageContent(data);
+    revalidatePath('/contact');
+    revalidatePath('/admin/contact');
+    revalidatePath('/');
+    return { success: true, data: updated };
+  } catch (err) {
+    console.error('[Dashboard Action] Contact Page Update failed:', err);
     return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };
   }
 }

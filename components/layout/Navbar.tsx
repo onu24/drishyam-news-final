@@ -60,7 +60,7 @@ export function Navbar() {
   }, [t, language]);
 
   return (
-    <nav className="border-b border-border bg-background/95 backdrop-blur-md sticky top-[80px] z-30 shadow-sm shadow-black/5 dark:shadow-white/5 overflow-hidden">
+    <nav className="border-b border-border bg-background overflow-hidden relative md:sticky md:top-16 z-30 md:backdrop-blur-md shadow-sm shadow-black/5 dark:shadow-white/5">
       <div className="max-w-7xl mx-auto relative">
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center px-4 sm:px-6 lg:px-8 h-12">

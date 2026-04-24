@@ -59,7 +59,7 @@ export function ArticleCard({ article, variant = 'default' }: ArticleCardProps) 
           </div>
         </div>
         <div className="space-y-4">
-          <h2 className={`font-serif text-3xl sm:text-4xl lg:text-5xl font-bold leading-[1.1] text-foreground group-hover:text-primary transition-colors ${language === 'hi' ? 'font-hindi' : ''}`}>
+          <h2 className={`font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground group-hover:text-primary transition-colors text-balance ${language === 'hi' ? 'font-hindi leading-[1.4] py-1' : 'leading-tight'}`}>
             {displayTitle}
           </h2>
           {displayDescription && (
@@ -95,7 +95,7 @@ export function ArticleCard({ article, variant = 'default' }: ArticleCardProps) 
           <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-1">
             {displayCategory}
           </p>
-          <h4 className={`font-serif text-base sm:text-lg font-bold leading-snug text-foreground group-hover:text-primary transition-colors line-clamp-2 ${language === 'hi' ? 'font-hindi' : ''}`}>
+          <h4 className={`font-serif text-base sm:text-lg font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2 text-balance ${language === 'hi' ? 'font-hindi leading-[1.5]' : 'leading-snug'}`}>
             {displayTitle}
           </h4>
           <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest mt-2">{formatDate(article.createdAt)}</p>
@@ -121,7 +121,7 @@ export function ArticleCard({ article, variant = 'default' }: ArticleCardProps) 
         <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-1">
           {displayCategory}
         </p>
-        <h3 className={`font-serif text-base font-bold leading-snug text-foreground group-hover:text-primary transition-colors mb-2 line-clamp-2 ${language === 'hi' ? 'font-hindi' : ''}`}>
+        <h3 className={`font-serif text-base font-bold text-foreground group-hover:text-primary transition-colors mb-2 line-clamp-2 text-balance ${language === 'hi' ? 'font-hindi leading-[1.5]' : 'leading-snug'}`}>
           {displayTitle}
         </h3>
         <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">{formatDate(article.createdAt)}</p>
@@ -146,7 +146,7 @@ export function ArticleCard({ article, variant = 'default' }: ArticleCardProps) 
         <p className="text-[10px] font-bold uppercase tracking-widest text-primary">
           {displayCategory}
         </p>
-        <h3 className={`font-serif text-xl sm:text-2xl font-bold leading-tight text-foreground group-hover:text-primary transition-colors line-clamp-3 ${language === 'hi' ? 'font-hindi' : ''}`}>
+        <h3 className={`font-serif text-xl sm:text-2xl font-bold text-foreground group-hover:text-primary transition-colors line-clamp-3 text-balance ${language === 'hi' ? 'font-hindi leading-[1.4] py-1' : 'leading-tight'}`}>
           {displayTitle}
         </h3>
         {displayDescription && (

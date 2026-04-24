@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Martel:wght@400;700;900&family=Yantramanav:wght@300;400;500;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Martel:wght@400;700;900&family=Yantramanav:wght@300;400;500;700;900&family=Tiro+Devanagari+Hindi:ital@0;1&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
@@ -83,8 +83,9 @@
   --font-poppins: var(--font-poppins);
   --font-merriweather: var(--font-merriweather);
   --font-playfair: var(--font-playfair);
-  --font-hindi: 'Yantramanav', sans-serif;
-  --font-hindi-serif: 'Martel', serif;
+  /* Hindi typography — use Next.js-loaded Noto Sans Devanagari as primary */
+  --font-hindi: var(--font-hindi), 'Noto Sans Devanagari', 'Yantramanav', sans-serif;
+  --font-hindi-serif: 'Martel', 'Tiro Devanagari Hindi', serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -227,10 +228,48 @@
   /* Premium Hindi Font Utilities */
   .font-hindi {
     font-family: var(--font-hindi);
+    /* Devanagari needs a touch more line-height and no extra letter-spacing */
+    line-height: 1.75;
+    letter-spacing: 0em;
   }
   
   .font-hindi-serif {
     font-family: var(--font-hindi-serif);
+    line-height: 1.65;
+    letter-spacing: 0em;
+  }
+
+  /* Tiro Devanagari — premium editorial Hindi body */
+  .font-hindi-tiro {
+    font-family: 'Tiro Devanagari Hindi', 'Martel', serif;
+    line-height: 1.8;
+    letter-spacing: 0em;
+  }
+
+  /* Footer-specific Hindi heading: larger, bolder, better spacing */
+  .font-hindi-footer-heading {
+    font-family: 'Martel', var(--font-hindi-serif), serif;
+    font-weight: 900;
+    letter-spacing: 0.02em;
+    line-height: 1.4;
+  }
+
+  /* Footer nav links in Hindi */
+  .font-hindi-footer-link {
+    font-family: var(--font-hindi), 'Noto Sans Devanagari', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    line-height: 1.75;
+    letter-spacing: 0em;
+  }
+
+  /* Section labels (UPPERCASE-equivalent caps) in Hindi */
+  .font-hindi-label {
+    font-family: 'Martel', var(--font-hindi-serif), serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.01em;
+    line-height: 1.5;
   }
   
   @media (prefers-reduced-motion: reduce) {

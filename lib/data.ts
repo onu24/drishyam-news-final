@@ -115,23 +115,30 @@ function toAboutContent(id: string, data: Record<string, any>): AboutPageContent
   return {
     id,
     heroTitle: data.heroTitle || 'About Drishyam News',
+    heroTitle_hi: data.heroTitle_hi || null,
     heroSubtitle:
       data.heroSubtitle ||
       'Independent journalism for a modern India. We deliver facts, context, and clarity.',
+    heroSubtitle_hi: data.heroSubtitle_hi || null,
     profileImage: data.profileImage || '/placeholder-user.jpg',
     intro:
       data.intro ||
       'Drishyam News is a digital newsroom focused on truth-first reporting and in-depth public-interest journalism.',
+    intro_hi: data.intro_hi || null,
     story:
       data.story ||
       'From breaking headlines to explainers, our editorial process prioritizes verification, fairness, and accountability.',
+    story_hi: data.story_hi || null,
     mission: data.mission || 'To make credible journalism accessible, fast, and meaningful for every reader.',
+    mission_hi: data.mission_hi || null,
     vision:
       data.vision || 'To become India\u2019s most trusted digital-first news platform for informed citizens.',
+    vision_hi: data.vision_hi || null,
     values:
       Array.isArray(data.values) && data.values.length > 0
         ? data.values.map((v: any) => String(v))
         : ['Accuracy', 'Independence', 'Accountability', 'Public Interest'],
+    values_hi: Array.isArray(data.values_hi) ? data.values_hi.map((v: any) => String(v)) : null,
     updatedAt:
       data.updatedAt instanceof Date
         ? data.updatedAt.toISOString()

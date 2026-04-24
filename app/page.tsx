@@ -32,43 +32,74 @@ export const metadata = {
 };
 
 export default async function Home() {
-
+  // 1. Fetch data in parallel with generous buffers to allow for deduplication
   const [
     featured,
-    latest,
-    indiaNews,
-    politicsNews,
-    economyNews,
-    techNews,
-    sportsNews,
-    entertainNews,
-    jobsNews,
-    examsNews,
-    explainerArticles,
-    opinionArticles,
-    videoArticles,
+    latestRaw,
+    indiaRaw,
+    politicsRaw,
+    economyRaw,
+    techRaw,
+    sportsRaw,
+    entertainRaw,
+    jobsRaw,
+    examsRaw,
+    explainerRaw,
+    opinionRaw,
+    videoRaw,
     visualStories,
     liveMatches,
   ] = await Promise.all([
     getFeaturedArticle(),
-    getLatestArticles(12),
-    getArticlesByCategory('india', 5),
-    getArticlesByCategory('politics', 5),
-    getArticlesByCategory('economy', 5),
-    getArticlesByCategory('technology', 5),
-    getArticlesByCategory('sports', 6),
-    getArticlesByCategory('entertainment', 6),
-    getArticlesByCategory('jobs', 4),
-    getArticlesByCategory('exams', 4),
-    getArticlesByType('explainer', 3),
-    getArticlesByType('opinion', 4),
-    getArticlesByType('video', 5),
+    getLatestArticles(25),
+    getArticlesByCategory('india', 20),
+    getArticlesByCategory('politics', 20),
+    getArticlesByCategory('economy', 20),
+    getArticlesByCategory('technology', 20),
+    getArticlesByCategory('sports', 20),
+    getArticlesByCategory('entertainment', 20),
+    getArticlesByCategory('jobs', 15),
+    getArticlesByCategory('exams', 15),
+    getArticlesByType('explainer', 15),
+    getArticlesByType('opinion', 15),
+    getArticlesByType('video', 15),
     getVisualStories(),
     getLiveCricketScores(),
   ]);
 
-  const leadArticle = featured || latest[0];
-  const sidebarLatest = latest.filter(a => a.id !== leadArticle?.id).slice(0, 5);
+  // 2. Deduplication logic using a Set to track seen IDs
+  const usedIds = new Set<string>();
+
+  // Helper to pick unique articles from a pool
+  const pickUnique = (pool: any[], count: number) => {
+    const selected = pool.filter(a => !usedIds.has(a.id)).slice(0, count);
+    selected.forEach(a => usedIds.add(a.id));
+    return selected;
+  };
+
+  // 3. Sequentially allocate articles to sections
+  // Priority 1: Lead Hierarchy
+  const leadArticle = (featured && !usedIds.has(featured.id)) ? featured : latestRaw[0];
+  if (leadArticle) usedIds.add(leadArticle.id);
+
+  const sidebarLatest = pickUnique(latestRaw, 5);
+  const tickerArticles = latestRaw.slice(0, 5); // Ticker can duplicate for high-priority exposure, or we can pick fresh ones
+  
+  // Priority 2: Main Editorial Sections
+  const indiaNews = pickUnique(indiaRaw, 5);
+  const politicsNews = pickUnique(politicsRaw, 5);
+  const economyNews = pickUnique(economyRaw, 5);
+  const techNews = pickUnique(techRaw, 5);
+  const sportsNews = pickUnique(sportsRaw, 6);
+  const entertainNews = pickUnique(entertainRaw, 6);
+  
+  // Priority 3: Specialized Content
+  const explainerArticles = pickUnique(explainerRaw, 3);
+  const opinionArticles = pickUnique(opinionRaw, 4);
+  const videoArticles = pickUnique(videoRaw, 5);
+  const jobsNews = pickUnique(jobsRaw, 4);
+  const examsNews = pickUnique(examsRaw, 4);
+
   const visuals = visualStories || [];
   const hasIndiaNews = indiaNews.length > 0;
   const hasEconomyNews = economyNews.length > 0;
@@ -83,13 +114,14 @@ export default async function Home() {
     <div className="flex flex-col min-h-screen bg-white">
       <TopBar />
       <Header />
-      <Navbar />
-      <BreakingStrip articles={latest.slice(0, 5)} />
+      <BreakingStrip articles={tickerArticles} />
       
       {/* Real-time IPL Updates - Show on Home if an IPL match is LIVE or UPCOMING */}
       {liveMatches.some((m: any) => (m.status === 'LIVE' || m.status === 'UPCOMING') && m.isIPL) && (
         <SportsScoreboard initialMatches={liveMatches} />
       )}
+      
+      <Navbar />
       
       <main className="flex-1 w-full space-y-4">
         {/* Above the Fold: Lead Hierarchy */}

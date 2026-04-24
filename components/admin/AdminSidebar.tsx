@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   Settings,
   Info,
+  Phone,
   LogOut
 } from 'lucide-react';
 import { logout } from '@/lib/actions/auth-actions';
@@ -54,6 +55,7 @@ export function AdminSidebar() {
         { href: '/admin/categories', label: 'Categories', icon: Tags },
         { href: '/admin/authors', label: 'Authors', icon: Users },
         { href: '/admin/about', label: 'About Page', icon: Info },
+        { href: '/admin/contact', label: 'Contact Page', icon: Phone },
         { href: '/admin/categories', label: 'Settings', icon: Settings },
       ]
     }
