@@ -63,6 +63,7 @@ export function AdminSidebar() {
     {
       title: 'System',
       items: [
+        { href: '/admin/users', label: 'Manage Users', icon: Users },
         { href: '/admin/create-user', label: 'Create Admin', icon: UserPlus },
       ]
     }
