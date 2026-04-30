@@ -2,9 +2,12 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { ArrowRight } from 'lucide-react';
 import { NewsArticle } from '@/lib/types';
 import { useLanguage } from '@/components/providers/LanguageProvider';
 import { WeatherWidget } from '../layout/WeatherWidget';
+import { motion } from 'framer-motion';
+import { AnimatedLive } from '../layout/AnimatedIcons';
 
 export interface HeroLatestSectionProps {
   leadArticle: NewsArticle;
@@ -97,14 +100,14 @@ export function HeroLatestSection({ leadArticle, latestArticles }: HeroLatestSec
             <div className="lg:col-span-4 flex flex-col h-full border-t-2 lg:border-t-0 lg:border-l border-zinc-100 dark:border-zinc-900 pt-10 lg:pt-0 lg:pl-12">
               
               {/* Regional Weather Context */}
-              <div className="mb-10 p-6 bg-gradient-to-br from-zinc-50 to-white dark:from-zinc-900/80 dark:to-zinc-950 rounded-2xl border border-primary/10 shadow-xl shadow-black/5 relative overflow-hidden group/card hover:border-primary/30 transition-all duration-500">
+              <div className="mb-6 sm:mb-10 p-4 sm:p-6 bg-gradient-to-br from-zinc-50 to-white dark:from-zinc-900/80 dark:to-zinc-950 rounded-2xl border border-primary/10 shadow-xl shadow-black/5 relative overflow-hidden group/card hover:border-primary/30 transition-all duration-500">
                  {/* Decorative background glow */}
-                 <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/5 blur-[80px] rounded-full group-hover/card:bg-primary/10 transition-colors" />
+                 <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/5 blur-[80px] rounded-full group-hover/card:bg-primary/10 transition-colors pointer-events-none" />
                  
-                 <div className="flex items-center justify-between mb-8">
-                    <div className="flex items-center gap-3">
-                       <span className="w-1 h-4 bg-primary rounded-full" />
-                       <span className="text-[11px] font-black uppercase tracking-[0.3em] text-foreground">Bilaspur Profile</span>
+                 <div className="flex items-center justify-between mb-5 sm:mb-8">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                       <span className="w-1 h-4 bg-primary rounded-full flex-shrink-0" />
+                       <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.25em] sm:tracking-[0.3em] text-foreground">Bilaspur Profile</span>
                     </div>
                     <div className="relative flex h-2 w-2">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-40"></span>
@@ -115,15 +118,16 @@ export function HeroLatestSection({ leadArticle, latestArticles }: HeroLatestSec
               </div>
 
               <div className="flex items-center justify-between mb-10 pb-4 border-b border-zinc-200 dark:border-zinc-800">
-                <h3 className="font-black text-2xl uppercase tracking-tighter text-foreground flex items-center group/title cursor-default">
-                  <span className="w-3 h-3 bg-primary mr-3 transform rotate-45 group-hover/title:rotate-[225deg] transition-transform duration-500" />
+                <h3 className="font-black text-xl sm:text-2xl uppercase tracking-tighter text-foreground flex items-center group/title cursor-default">
+                  <motion.div 
+                    animate={{ rotate: [45, 225, 45] }}
+                    transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                    className="w-3 h-3 bg-primary mr-3 shadow-[0_0_10px_rgba(220,38,38,0.3)]" 
+                  />
                   {t('top_feeds')}
                 </h3>
-                <Link href="/latest" className="group/live flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary/80 hover:text-primary transition-colors">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                  </span>
+                <Link href="/latest" className="group/live flex items-center gap-2.5 text-[10px] font-black uppercase tracking-widest text-primary/80 hover:text-primary transition-colors">
+                  <AnimatedLive className="w-2.5 h-2.5" />
                   {t('live')}
                 </Link>
               </div>
@@ -166,12 +170,32 @@ export function HeroLatestSection({ leadArticle, latestArticles }: HeroLatestSec
                 })}
               </div>
               
-              <Link 
-                href="/latest" 
-                className="group/btn mt-12 w-full py-5 bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-sm text-center text-[11px] font-black uppercase tracking-[0.4em] hover:bg-primary hover:text-white hover:border-primary transition-all duration-500 overflow-hidden relative shadow-sm"
+              <Link
+                href="/latest"
+                className="group/btn mt-6 sm:mt-12 w-full flex items-center justify-center gap-2.5
+                           py-4 sm:py-5 px-5
+                           bg-red-600 dark:bg-red-600
+                           border border-red-600 dark:border-red-600
+                           rounded-xl sm:rounded-sm
+                           text-[11px] sm:text-[12px] font-black uppercase tracking-[0.3em] sm:tracking-[0.4em]
+                           text-white
+                           hover:bg-red-700 hover:border-red-700
+                           active:scale-[0.97]
+                           transition-all duration-300 overflow-hidden relative shadow-md shadow-red-600/20"
               >
-                <div className="absolute inset-0 bg-white/10 -translate-y-full group-hover/btn:translate-y-0 transition-transform duration-500" />
+                {/* Shimmer sweep on hover */}
+                <div className="absolute inset-0 -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/15 to-transparent pointer-events-none" />
+
+                {/* Live pulse dot */}
+                <span className="relative flex h-1.5 w-1.5 flex-shrink-0">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-60" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white" />
+                </span>
+
                 <span className="relative z-10">{t('view_all')}</span>
+
+                {/* Arrow icon slides in on hover */}
+                <ArrowRight className="h-3.5 w-3.5 flex-shrink-0 opacity-0 -translate-x-2 group-hover/btn:opacity-100 group-hover/btn:translate-x-0 transition-all duration-300 relative z-10" />
               </Link>
             </div>
 

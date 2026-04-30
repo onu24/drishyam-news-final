@@ -15,12 +15,16 @@ export async function getLiveCricketScores() {
   if (!RAPIDAPI_KEY) return [];
 
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000); // 3-second timeout
+
     // Fetch live, upcoming, and recent concurrently for a full 360-degree scoreboard
     const [liveRes, upcomingRes, recentRes] = await Promise.all([
-      fetch(`https://${RAPIDAPI_HOST}/matches/v1/live`, { headers: HEADERS, next: { revalidate: 60 } }),
-      fetch(`https://${RAPIDAPI_HOST}/matches/v1/upcoming`, { headers: HEADERS, next: { revalidate: 300 } }),
-      fetch(`https://${RAPIDAPI_HOST}/matches/v1/recent`, { headers: HEADERS, next: { revalidate: 120 } })
+      fetch(`https://${RAPIDAPI_HOST}/matches/v1/live`, { headers: HEADERS, next: { revalidate: 60 }, signal: controller.signal }),
+      fetch(`https://${RAPIDAPI_HOST}/matches/v1/upcoming`, { headers: HEADERS, next: { revalidate: 300 }, signal: controller.signal }),
+      fetch(`https://${RAPIDAPI_HOST}/matches/v1/recent`, { headers: HEADERS, next: { revalidate: 120 }, signal: controller.signal })
     ]);
+    clearTimeout(timeoutId);
 
     const liveData = liveRes.ok ? await liveRes.json() : null;
     const upcomingData = upcomingRes.ok ? await upcomingRes.json() : null;

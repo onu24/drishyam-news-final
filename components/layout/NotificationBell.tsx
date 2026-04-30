@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Bell, Clock, ArrowRight } from 'lucide-react';
+import { AnimatedBell } from './AnimatedIcons';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -160,7 +161,7 @@ export function NotificationBell() {
     if (minutes < 60) return `${minutes}m ago`;
     const hours = Math.floor(minutes / 60);
     if (hours < 24) return `${hours}h ago`;
-    return d.toLocaleDateString();
+    return d.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
   };
 
   return (
@@ -173,7 +174,7 @@ export function NotificationBell() {
           isOpen ? 'bg-primary text-white shadow-lg' : 'bg-secondary/50 text-foreground/70 hover:text-primary'
         }`}
       >
-        <Bell className={`h-5 w-5 ${isOpen ? '' : 'group-hover/bell:animate-ring'}`} />
+        <AnimatedBell active={hasNew || isOpen} className="h-5 w-5" />
         {hasNew && (
           <span className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background animate-pulse"></span>
         )}

@@ -111,14 +111,14 @@ export function Navbar() {
         </div>
 
         {/* Mobile Navigation (Scrollable Chips with Mask) */}
-        <div className="relative md:hidden">
+        <div className="relative md:hidden border-t border-border/40">
           {/* Edge Fades */}
           <div className="absolute left-0 inset-y-0 w-8 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
           <div className="absolute right-0 inset-y-0 w-12 bg-gradient-to-l from-background via-background/80 to-transparent z-10 pointer-events-none" />
 
           <div
             ref={scrollRef}
-            className="flex items-center gap-2 overflow-x-auto no-scrollbar px-6 py-3.5"
+            className="flex items-center gap-2 overflow-x-auto no-scrollbar px-4 py-2.5 sm:px-6 sm:py-3.5"
           >
             {categories.map((category) => {
               const isActive = pathname === category.slug;
@@ -127,10 +127,10 @@ export function Navbar() {
                 <Link
                   key={category.slug}
                   href={category.slug}
-                  className={`whitespace-nowrap px-4 py-1.5 rounded-full border transition-all duration-300 active:scale-95 ${isHindi ? 'text-sm font-medium font-hindi' : 'text-[10px] font-bold uppercase tracking-wider font-sans'
+                  className={`whitespace-nowrap px-4 py-1.5 rounded-full border transition-all duration-300 active:scale-95 flex items-center justify-center ${isHindi ? 'text-[13px] font-bold font-hindi' : 'text-[9px] font-black uppercase tracking-widest font-sans'
                     } ${isActive
                       ? 'bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/20'
-                      : 'bg-secondary/50 border-transparent text-foreground/80 hover:bg-secondary hover:text-primary active:bg-secondary/80'
+                      : 'bg-secondary/80 border-border/50 text-foreground/70 hover:bg-secondary hover:text-primary active:bg-secondary/80'
                     }`}
                 >
                   {category.name}

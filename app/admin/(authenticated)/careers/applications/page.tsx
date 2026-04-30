@@ -144,7 +144,7 @@ export default async function AdminApplicationsPage({
                   </div>
 
                   <div className="flex justify-between items-center text-[10px] text-muted-foreground uppercase tracking-widest pt-1">
-                    <span>{new Date(app.createdAt).toLocaleDateString()}</span>
+                    <span>{new Date(app.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
                     <span>{new Date(app.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                   </div>
                 </div>

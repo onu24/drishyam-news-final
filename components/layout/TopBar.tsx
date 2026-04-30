@@ -31,14 +31,53 @@ export function TopBar() {
 
   return (
     <div className={`bg-secondary/50 border-b border-border py-1.5 px-3 sm:px-4 text-[11px] sm:text-xs font-medium text-muted-foreground w-full z-50 sticky top-0 md:relative backdrop-blur-md transition-transform duration-500 ease-in-out ${scrolled ? 'translate-y-[-100%] md:translate-y-0' : 'translate-y-0'}`}>
-      <div className="max-w-7xl mx-auto flex items-center justify-end sm:justify-between gap-3">
-        {/* Date */}
-        <div className="tracking-wide hidden sm:block font-serif italic">{mounted ? dateStr : ''}</div>
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+        {/* Left Side: Language Switcher (Mobile) / Date (Desktop) */}
+        <div className="flex items-center gap-4">
+          {/* Mobile Language Switcher */}
+          <div className="sm:hidden relative flex items-center bg-secondary dark:bg-zinc-900 border border-border/40 rounded-full p-0.5 shadow-inner scale-90 origin-left">
+            <button
+              onClick={() => setLanguage('en')}
+              suppressHydrationWarning
+              className={`relative h-6 px-2.5 flex items-center justify-center transition-colors duration-300 ${
+                language === 'en' ? 'text-white' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {language === 'en' && (
+                <motion.div
+                  layoutId="lang-active-mobile"
+                  className="absolute inset-0 bg-primary rounded-full shadow-lg shadow-primary/30 z-0"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
+              <span className="relative z-10 text-[9px] font-black tracking-tighter">EN</span>
+            </button>
+            <button
+              onClick={() => setLanguage('hi')}
+              suppressHydrationWarning
+              className={`relative h-6 px-3.5 flex items-center justify-center transition-colors duration-300 ${
+                language === 'hi' ? 'text-white' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {language === 'hi' && (
+                <motion.div
+                  layoutId="lang-active-mobile"
+                  className="absolute inset-0 bg-primary rounded-full shadow-lg shadow-primary/30 z-0"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
+              <span className="relative z-10 text-[11px] font-hindi font-bold">हिन्दी</span>
+            </button>
+          </div>
+
+          {/* Date - Desktop Only */}
+          <div className="tracking-wide hidden sm:block font-serif italic">{mounted ? dateStr : ''}</div>
+        </div>
 
         {/* Right side controls */}
-        <div className="flex items-center gap-4 sm:gap-6 ml-auto">
-          {/* Language Switcher - Premium Layout-ID Style */}
-          <div className="relative flex items-center bg-secondary dark:bg-zinc-900 border border-border/40 rounded-full p-1 shadow-inner">
+        <div className="flex items-center gap-3 sm:gap-6">
+          {/* Desktop Language Switcher */}
+          <div className="hidden sm:flex relative items-center bg-secondary dark:bg-zinc-900 border border-border/40 rounded-full p-1 shadow-inner">
             <button
               onClick={() => setLanguage('en')}
               suppressHydrationWarning
@@ -75,10 +114,10 @@ export function TopBar() {
           </div>
 
           {/* Auth Links */}
-          <div className="flex items-center gap-4 border-l border-border/40 pl-4">
+          <div className="flex items-center gap-3 sm:gap-4 border-l border-border/40 pl-3 sm:pl-4">
             <a 
               href="/admin/login" 
-              className="hover:text-primary transition-colors font-bold uppercase tracking-widest text-[9px] sm:text-[10px]"
+              className="hover:text-primary transition-colors font-bold uppercase tracking-widest text-[8px] sm:text-[10px]"
             >
               Admin Portal
             </a>

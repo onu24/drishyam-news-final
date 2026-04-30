@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { ArrowUp } from 'lucide-react';
+import { AnimatedRocketArrow } from './AnimatedIcons';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function BackToTop() {
@@ -38,7 +39,7 @@ export function BackToTop() {
           className="fixed bottom-8 right-8 z-50 p-3 bg-primary text-white rounded-full shadow-2xl hover:bg-primary/90 transition-colors group"
           aria-label="Back to top"
         >
-          <ArrowUp className="h-6 w-6 group-hover:-translate-y-1 transition-transform" />
+          <AnimatedRocketArrow className="h-6 w-6" />
         </motion.button>
       )}
     </AnimatePresence>

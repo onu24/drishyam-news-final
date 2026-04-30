@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRef, useEffect, useState } from 'react';
 
 import { NewsArticle } from '@/lib/types';
+import { AnimatedBolt } from '../layout/AnimatedIcons';
 
 interface BreakingStripProps {
   articles: NewsArticle[];
@@ -28,21 +29,20 @@ export function BreakingStrip({ articles }: BreakingStripProps) {
   const items = articles;
 
   const getDisplayTitle = (news: NewsArticle) => {
-    return (language === 'hi' && news.title_hi) ? news.title_hi : (news.headline || news.title);
+    return (language === 'hi' && news.title_hi) ? news.title_hi : news.title;
   };
 
   return (
     <div className={`bg-background dark:bg-zinc-950 border-b border-primary/20 overflow-hidden sticky md:relative z-30 flex h-10 md:h-12 w-full shadow-sm group/ticker transition-all duration-500 ${
-      scrolled ? 'top-[96px] md:top-auto' : 'top-[132px] md:top-auto'
+      scrolled ? 'top-[64px] md:top-auto' : 'top-[116px] md:top-auto'
     }`}>
       {/* Dynamic Breaking Badge */}
       <div className="relative bg-gradient-to-br from-primary via-[#d41f16] to-[#af1912] text-white font-black px-4 md:px-10 py-2 md:py-2.5 text-[9px] md:text-[11px] tracking-[0.2em] md:tracking-[0.25em] uppercase flex items-center whitespace-nowrap z-30 shadow-[10px_0_25px_-5px_rgba(0,0,0,0.3)] shrink-0 italic overflow-hidden">
         {/* Shimmer Effect */}
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/ticker:animate-[shimmer_2s_infinite] pointer-events-none" />
         
-        <span className="mr-3 md:mr-4 flex h-2 md:h-2.5 w-2 md:w-2.5 relative">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-2 md:h-2.5 w-2 md:w-2.5 bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]"></span>
+        <span className="mr-3 md:mr-4 flex h-4 w-4 relative items-center justify-center">
+          <AnimatedBolt />
         </span>
         {t('breaking')}
       </div>

@@ -122,7 +122,7 @@ export default async function AdminCareersPage() {
                   </div>
                   <div className="flex justify-between items-center pt-2">
                     <span className="text-[10px] text-muted-foreground uppercase tracking-tighter">
-                      Posted: {new Date(job.createdAt).toLocaleDateString()}
+                      Posted: {new Date(job.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                     </span>
                     <Link 
                       href={`/admin/careers/${job.id}`}

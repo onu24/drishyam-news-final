@@ -104,6 +104,7 @@ export const metadata: Metadata = {
 
 import { LanguageProvider } from '@/components/providers/LanguageProvider'
 import { BackToTop } from '@/components/layout/BackToTop'
+import { SubtleGridPattern } from '@/components/layout/SVGPatterns'
 
 export default function RootLayout({
   children,
@@ -131,6 +132,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <LanguageProvider>
+            <SubtleGridPattern />
             {children}
             <BackToTop />
           </LanguageProvider>

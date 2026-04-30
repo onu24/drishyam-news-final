@@ -9,15 +9,27 @@ import Link from 'next/link';
 import { useLanguage } from '@/components/providers/LanguageProvider';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export function SearchInput() {
+interface SearchInputProps {
+  isMobileMode?: boolean;
+  onNavigate?: () => void;
+}
+
+export function SearchInput({ isMobileMode = false, onNavigate }: SearchInputProps) {
   const { language, t } = useLanguage();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<NewsArticle[]>([]);
-  const [isFocused, setIsFocused] = useState(false);
+  const [isFocused, setIsFocused] = useState(isMobileMode); // Auto-focus in mobile mode
   const [isLoading, setIsLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isMobileMode && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isMobileMode]);
 
   useEffect(() => {
     let isActive = true;
@@ -51,9 +63,11 @@ export function SearchInput() {
         setIsFocused(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
+    if (!isMobileMode) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [isMobileMode]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {
@@ -70,8 +84,10 @@ export function SearchInput() {
         router.push(`/article/${results[selectedIndex].slug}`);
       }
       setIsFocused(false);
+      onNavigate?.();
     } else if (e.key === 'Escape') {
       setIsFocused(false);
+      onNavigate?.();
     }
   };
 
@@ -80,15 +96,17 @@ export function SearchInput() {
     if (query.trim()) {
       router.push(`/search?q=${encodeURIComponent(query.trim())}`);
       setIsFocused(false);
+      onNavigate?.();
     }
   };
 
-  const dropdownOpen = isFocused && (query.trim().length >= 2 || results.length > 0);
+  const dropdownOpen = (isFocused || isMobileMode) && (query.trim().length >= 2 || results.length > 0);
 
   return (
-    <div className="relative w-full max-w-sm ml-auto" ref={dropdownRef}>
+    <div className={`relative w-full ${isMobileMode ? '' : 'max-w-sm ml-auto'}`} ref={dropdownRef}>
       <form onSubmit={handleSearch} className="relative group">
         <input
+          ref={inputRef}
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -100,9 +118,9 @@ export function SearchInput() {
           aria-controls="search-results"
           autoComplete="off"
           suppressHydrationWarning
-          className={`w-full bg-secondary placeholder:text-muted-foreground text-foreground px-4 py-2.5 rounded-full text-sm border border-transparent focus:border-primary/50 focus:ring-4 focus:ring-primary/10 focus:outline-none transition-all pl-10 pr-10 ${language === 'hi' ? 'font-hindi' : ''}`}
+          className={`w-full bg-secondary placeholder:text-muted-foreground text-foreground px-4 py-2.5 rounded-full text-sm border border-transparent focus:border-primary/50 focus:ring-4 focus:ring-primary/10 focus:outline-none transition-all pl-10 pr-10 ${language === 'hi' ? 'font-hindi' : ''} ${isMobileMode ? 'h-12 text-base' : ''}`}
         />
-        <Search className="h-4 w-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2 group-focus-within:text-primary transition-colors" />
+        <Search className={`h-4 w-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2 group-focus-within:text-primary transition-colors ${isMobileMode ? 'h-5 w-5' : ''}`} />
         
         <AnimatePresence>
           {query && (
@@ -114,7 +132,7 @@ export function SearchInput() {
               onClick={() => { setQuery(''); setResults([]); }}
               className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
             >
-              <X size={14} />
+              <X size={isMobileMode ? 18 : 14} />
             </motion.button>
           )}
         </AnimatePresence>
@@ -126,11 +144,11 @@ export function SearchInput() {
           <motion.div 
             id="search-results"
             role="listbox"
-            initial={{ opacity: 0, y: 10, scale: 0.98 }}
+            initial={isMobileMode ? { opacity: 0, y: 10 } : { opacity: 0, y: 10, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.98 }}
+            exit={isMobileMode ? { opacity: 0, y: 10 } : { opacity: 0, y: 8, scale: 0.98 }}
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute top-full mt-2 left-0 right-0 bg-background border border-border rounded-xl shadow-2xl overflow-hidden z-50 origin-top"
+            className={`absolute top-full mt-2 left-0 right-0 bg-background border border-border shadow-2xl overflow-hidden z-50 origin-top ${isMobileMode ? 'fixed top-[132px] md:top-[96px] left-4 right-4 rounded-2xl' : 'rounded-xl'}`}
           >
             <div className="p-2">
               {isLoading ? (
@@ -154,7 +172,10 @@ export function SearchInput() {
                       >
                         <Link
                           href={`/article/${article.slug}`}
-                          onClick={() => setIsFocused(false)}
+                          onClick={() => {
+                            setIsFocused(false);
+                            onNavigate?.();
+                          }}
                           className={`flex items-start gap-3 p-2 rounded-lg transition-all group ${isSelected ? 'bg-primary/5 ring-1 ring-inset ring-primary/20' : 'hover:bg-secondary'}`}
                         >
                           <div className="relative w-12 h-12 shrink-0 rounded-md overflow-hidden bg-muted border border-border/10">
@@ -188,7 +209,10 @@ export function SearchInput() {
                   >
                     <Link
                       href={`/search?q=${encodeURIComponent(query)}`}
-                      onClick={() => setIsFocused(false)}
+                      onClick={() => {
+                        setIsFocused(false);
+                        onNavigate?.();
+                      }}
                       className={`flex items-center justify-between p-3 mt-1 text-xs font-black uppercase tracking-widest rounded-lg transition-all ${selectedIndex === results.length ? 'bg-primary text-white' : 'bg-primary/5 hover:bg-primary/10 text-primary'}`}
                     >
                       {t('view_all')}
