@@ -249,9 +249,16 @@ export const getArticleBySlug = cache(async (slug: string): Promise<NewsArticle 
       doc = await db.collection('articles').findOne({ shortId: slug });
     }
 
+    // Fallback 2: Fuzzy search for truncated slugs (common on Vercel/encoded Hindi)
+    if (!doc) {
+      doc = await db.collection('articles').findOne({ 
+        slug: { $regex: new RegExp(`^${decodedSlug.slice(0, 20)}`, 'i') } 
+      });
+    }
+
     if (doc) return toArticle(doc._id.toString(), doc);
 
-    // Fallback 2: try ObjectId lookup
+    // Fallback 3: try ObjectId lookup
     if (ObjectId.isValid(slug)) {
       const byId = await db.collection('articles').findOne({ _id: new ObjectId(slug) });
       if (byId) return toArticle(byId._id.toString(), byId);

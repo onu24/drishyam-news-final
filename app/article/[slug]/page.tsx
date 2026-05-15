@@ -25,7 +25,8 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import Script from 'next/script';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
+export const revalidate = 0; 
 
 export async function generateStaticParams() {
   // Pre-render top 25 articles for build stability. 
