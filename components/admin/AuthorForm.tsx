@@ -36,8 +36,6 @@ export function AuthorForm({ author, onClose, onSuccess }: AuthorFormProps) {
     role: author?.role || '',
     avatar: author?.avatar || '',
     bio: author?.bio || '',
-    twitter: author?.socialLinks?.twitter || '',
-    linkedin: author?.socialLinks?.linkedin || '',
   });
 
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
@@ -77,13 +75,6 @@ export function AuthorForm({ author, onClose, onSuccess }: AuthorFormProps) {
         avatar: formData.avatar.trim() || DEFAULT_AVATAR,
         email: formData.email.trim() || undefined,
         role: formData.role.trim() || undefined,
-        socialLinks:
-          formData.twitter.trim() || formData.linkedin.trim()
-            ? {
-                twitter: formData.twitter.trim() || undefined,
-                linkedin: formData.linkedin.trim() || undefined,
-              }
-            : undefined,
       };
 
       if (author) {
@@ -195,31 +186,7 @@ export function AuthorForm({ author, onClose, onSuccess }: AuthorFormProps) {
             />
           </div>
 
-          <div>
-            <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">
-              Twitter
-            </label>
-            <input
-              type="url"
-              value={formData.twitter}
-              onChange={(e) => setFormData({ ...formData, twitter: e.target.value })}
-              className="w-full bg-background p-3 border-2 border-border rounded-lg focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
-              placeholder="https://x.com/username"
-            />
-          </div>
 
-          <div>
-            <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">
-              LinkedIn
-            </label>
-            <input
-              type="url"
-              value={formData.linkedin}
-              onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })}
-              className="w-full bg-background p-3 border-2 border-border rounded-lg focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
-              placeholder="https://linkedin.com/in/username"
-            />
-          </div>
         </div>
 
         <div>

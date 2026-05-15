@@ -3,7 +3,7 @@
 import { NewsArticle as Article, Author } from '@/lib/types';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Clock, Eye, Calendar } from 'lucide-react';
+import { Clock, Eye, Calendar, MapPin, Radio } from 'lucide-react';
 import { ScrollReveal } from '@/components/ScrollReveal';
 import { useLanguage } from '@/components/providers/LanguageProvider';
 import { useState } from 'react';
@@ -87,24 +87,32 @@ export function ArticleHeader({ article, author }: ArticleHeaderProps) {
       <ScrollReveal delay={200}>
         <div className="space-y-8">
           {/* Category & Type Badges */}
-          <div className="flex items-center gap-3">
-            <span className="px-3 py-1.5 bg-primary text-white text-[10px] font-black uppercase tracking-tighter rounded-sm shadow-md">
+          <div className="flex items-center flex-wrap gap-3">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-gradient-to-br from-primary to-red-700 text-white text-[10px] font-black uppercase tracking-widest rounded-sm shadow-xl shadow-primary/10 ring-1 ring-white/10 hover:brightness-110 transition-all cursor-default">
+              <MapPin size={12} className="text-white/80" />
               {displayCategory}
             </span>
+            
+            {article.isLive && (
+              <span className="inline-flex items-center gap-2.5 px-4 py-1.5 bg-gradient-to-br from-emerald-500 to-teal-700 text-white text-[10px] font-black uppercase tracking-widest rounded-sm shadow-xl shadow-emerald-500/20 ring-1 ring-white/10">
+                <div className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]"></span>
+                </div>
+                <Radio size={12} className="text-white/80 animate-pulse" />
+                {t('live')}
+              </span>
+            )}
+
             {isOpinion && (
-              <span className="px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-tighter rounded-sm shadow-md">
+              <span className="px-3 py-1.5 bg-zinc-950 text-white text-[10px] font-black uppercase tracking-tighter rounded-sm shadow-md ring-1 ring-white/5">
                 {t('opinion')}
               </span>
             )}
+            
             {article.articleType === 'explainer' && (
               <span className="px-3 py-1.5 bg-blue-700 text-white text-[10px] font-black uppercase tracking-tighter rounded-sm shadow-md">
                 {t('analysis')}
-              </span>
-            )}
-            {article.isLive && (
-              <span className="px-3 py-1.5 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest rounded-sm shadow-md flex items-center gap-2">
-                <span className="h-1.5 w-1.5 bg-white rounded-full animate-pulse" />
-                {t('live')}
               </span>
             )}
           </div>

@@ -1,82 +1,118 @@
 'use client';
 
-import { ChevronLeft, ChevronRight, Trophy, X, MapPin, Clock, Info } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Trophy, X, MapPin, Clock, Info, Radio, RefreshCw, Loader2 } from 'lucide-react';
 import { useLanguage } from '../providers/LanguageProvider';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
-
-const MOCK_SCORES = [
-  {
-    id: 1,
-    status: 'PREVIOUS',
-    matchNo: 33,
-    date: '23-Apr-2026',
-    team1: { name: 'चेन्नई', nameEn: 'Chennai', score: '207/6', overs: '20.0', color: '#FFFF00' },
-    team2: { name: 'मुंबई', nameEn: 'Mumbai', score: '104/10', overs: '19.0', color: '#004BA0' },
-    result: 'चेन्नई सुपर किंग्स ने मुंबई इंडियंस को 103 रन से हराया',
-    resultEn: 'CSK won by 103 runs'
-  },
-  {
-    id: 4,
-    status: 'UPCOMING',
-    matchNo: 34,
-    date: '24-Apr-2026',
-    time: '07:30 PM IST',
-    venue: 'M. Chinnaswamy Stadium, Bengaluru',
-    team1: { name: 'बेंगलुरु', nameEn: 'Bangalore', color: '#CC0000' },
-    team2: { name: 'कोलकाता', nameEn: 'Kolkata', color: '#2E0854' },
-    result: 'मैच शुरू होना बाकी है',
-    resultEn: 'Match starts at 07:30 PM'
-  },
-  {
-    id: 2,
-    status: 'PREVIOUS',
-    matchNo: 32,
-    date: '22-Apr-2026',
-    team1: { name: 'राजस्थान', nameEn: 'Rajasthan', score: '159/6', overs: '20.0', color: '#FF4081' },
-    team2: { name: 'लखनऊ', nameEn: 'Lucknow', score: '119/10', overs: '18.0', color: '#00E5FF' },
-    result: 'राजस्थान रॉयल्स ने लखनऊ सुपर जायंट्स को 40 रन से हराया',
-    resultEn: 'RR won by 40 runs'
-  },
-  {
-    id: 5,
-    status: 'UPCOMING',
-    matchNo: 35,
-    date: '25-Apr-2026',
-    time: '03:30 PM IST',
-    venue: 'Narendra Modi Stadium, Ahmedabad',
-    team1: { name: 'गुजरात', nameEn: 'Gujarat', color: '#1B2133' },
-    team2: { name: 'पंजाब', nameEn: 'Punjab', color: '#ED1F27' },
-    result: 'तैयारी जारी है',
-    resultEn: 'Preparation underway'
-  }
-];
+import { useState, useEffect, useCallback } from 'react';
+import { refreshCricketScoresAction, getMatchDetailsAction } from '@/lib/actions/sports-actions';
+import { PointsTableEntry, PlayerStatsEntry } from '@/lib/types';
 
 export function SportsScoreboard({ initialMatches = [] }: { initialMatches?: any[] }) {
   const { language, t } = useLanguage();
   const [selectedMatch, setSelectedMatch] = useState<any>(null);
+  const [matches, setMatches] = useState<any[]>(initialMatches);
+  const [dynamicStats, setDynamicStats] = useState<any>({
+    pointsTable: [],
+    topBatters: [],
+    topBowlers: []
+  });
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [modalLoading, setModalLoading] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [mounted, setMounted] = useState(false);
   
-  // High-resilience data merging: 
-  // If the API has zero matches for the requested tab, we merge in the MOCK_SCORES 
-  // to ensure the user always sees a professional UI instead of an empty state.
-  const apiMatches = initialMatches.length > 0 ? initialMatches : [];
-  const [activeTab, setActiveTab] = useState<'LIVE' | 'UPCOMING' | 'PREVIOUS'>(
-    apiMatches.some(m => m.status === 'LIVE') ? 'LIVE' : 'UPCOMING'
-  );
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const [activeTab, setActiveTab] = useState<'LIVE' | 'UPCOMING' | 'PREVIOUS' | 'POINTS'>(() => {
+    if (initialMatches.some(m => m.status === 'LIVE')) return 'LIVE';
+    if (initialMatches.some(m => m.status === 'UPCOMING')) return 'UPCOMING';
+    if (initialMatches.some(m => m.status === 'PREVIOUS')) return 'PREVIOUS';
+    return 'LIVE';
+  });
+
+  const refreshScores = useCallback(async (isAuto = false) => {
+    if (isRefreshing) return;
+    setIsRefreshing(true);
+    try {
+      const result = await refreshCricketScoresAction();
+      if (result.success && result.data) {
+        // Handle new nested data structure
+        const matchData = Array.isArray(result.data) ? result.data : result.data.matches;
+        const statsData = result.data.stats;
+        
+        if (matchData) {
+          setMatches(matchData);
+          // Auto-switch to a tab that has data
+          setActiveTab(prev => {
+            const hasData = (tab: string) => matchData.some((m: any) => m.status === tab);
+            if (hasData('LIVE')) return 'LIVE';
+            if (hasData('UPCOMING')) return 'UPCOMING';
+            if (hasData('PREVIOUS')) return 'PREVIOUS';
+            return prev;
+          });
+        }
+        if (statsData) setDynamicStats(statsData);
+        
+        setLastUpdated(new Date());
+      }
+    } catch (error) {
+      console.error('Failed to refresh scores:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [isRefreshing]);
+
+  // Auto-refresh every 2 minutes
+  useEffect(() => {
+    const interval = setInterval(() => refreshScores(true), 120000);
+    return () => clearInterval(interval);
+  }, [refreshScores]);
+
+  // Sync selectedMatch with updated matches to ensure modal stays live
+  useEffect(() => {
+    if (selectedMatch) {
+      const updated = matches.find(m => m.id === selectedMatch.id);
+      if (updated) setSelectedMatch((prev: any) => ({ ...prev, ...updated }));
+    }
+  }, [matches, selectedMatch?.id]);
+
+  const handleMatchClick = useCallback(async (match: any) => {
+    // Show the modal immediately with basic info
+    setSelectedMatch(match);
+    setModalLoading(true);
+    try {
+      const result = await getMatchDetailsAction(match.id);
+      if (result.success && result.data) {
+        setSelectedMatch((prev: any) => ({
+          ...prev,
+          batting: result.data!.batting,
+          bowling: result.data!.bowling,
+          recentOvers: result.data!.recentOvers,
+          partnership: result.data!.partnership,
+          lastWicket: result.data!.lastWicket,
+        }));
+      }
+    } catch (err) {
+      console.error('Failed to fetch match details:', err);
+    } finally {
+      setModalLoading(false);
+    }
+  }, []);
   
-  // Combine API matches with Mocks, prioritizing API but filling gaps
-  const combinedMatches = [...apiMatches, ...MOCK_SCORES];
-  
-  // To avoid duplicates if API and Mock match the same status, 
-  // we filter for the current tab from the combined list
-  // but we prioritize unique IDs
-  const filteredMatches = combinedMatches
+  const pointsTableData = dynamicStats.pointsTable;
+  const topBattersData = dynamicStats.topBatters;
+  const topBowlersData = dynamicStats.topBowlers;
+
+  // Use only live API matches
+  const filteredMatches = matches
     .filter(m => m.status === activeTab)
     .filter((v, i, a) => a.findIndex(t => t.id === v.id) === i)
     .slice(0, 10);
   
-  const hasLive = combinedMatches.some(m => m.status === 'LIVE');
-  const hasUpcoming = combinedMatches.some(m => m.status === 'UPCOMING');
+  const hasLive = matches.some(m => m.status === 'LIVE');
+  const hasUpcoming = matches.some(m => m.status === 'UPCOMING');
 
   return (
     <div className="w-full bg-zinc-50 dark:bg-zinc-950/20 border-b border-border py-10 mb-12 selection:bg-primary/20">
@@ -87,18 +123,29 @@ export function SportsScoreboard({ initialMatches = [] }: { initialMatches?: any
                 <span className="w-6 h-px bg-primary/30" />
                 {language === 'hi' ? 'ताज़ा स्कोर' : 'LATEST SCORES'}
              </h3>
-             <p className={`text-[10px] text-muted-foreground font-bold tracking-widest uppercase ml-8 ${language === 'hi' ? 'font-hindi' : ''}`}>
-                {language === 'hi' ? 'विशेष क्रिकेट कवरेज' : 'EXCLUSIVE CRICKET COVERAGE'}
-             </p>
+             <div className="flex items-center gap-3 ml-8">
+               <p className={`text-[10px] text-muted-foreground font-bold tracking-widest uppercase ${language === 'hi' ? 'font-hindi' : ''}`}>
+                  {language === 'hi' ? 'विशेष क्रिकेट कवरेज' : 'EXCLUSIVE CRICKET COVERAGE'}
+               </p>
+               <div className="h-1 w-1 rounded-full bg-zinc-300" />
+               <span 
+                 suppressHydrationWarning
+                 className="text-[9px] font-black text-zinc-400 tracking-tighter uppercase tabular-nums"
+               >
+                  Updated: {mounted ? lastUpdated.toLocaleTimeString() : '--:--:--'}
+               </span>
+             </div>
            </div>
 
-           {/* Premium Tab Switcher */}
-           <div className="flex bg-white dark:bg-zinc-900 p-1 border border-border shadow-sm rounded-sm">
-              {[
-                { id: 'LIVE', label: language === 'hi' ? 'लाइव' : 'LIVE' },
-                { id: 'UPCOMING', label: language === 'hi' ? 'आगामी' : 'UPCOMING' },
-                { id: 'PREVIOUS', label: language === 'hi' ? 'पूरा हुआ' : 'RECENT' }
-              ].map((tab) => (
+           {/* Premium Tab Switcher & Refresh */}
+           <div className="flex items-center gap-3">
+              <div className="flex bg-white dark:bg-zinc-900 p-1 border border-border shadow-sm rounded-sm">
+                 {[
+                   { id: 'LIVE', label: language === 'hi' ? 'लाइव' : 'LIVE' },
+                   { id: 'UPCOMING', label: language === 'hi' ? 'आगामी' : 'UPCOMING' },
+                   { id: 'PREVIOUS', label: language === 'hi' ? 'पूरा हुआ' : 'RECENT' },
+                   { id: 'POINTS', label: language === 'hi' ? 'पॉइंट्स टेबल' : 'POINTS TABLE' }
+                 ].map((tab) => (
                 <button
                   key={tab.id}
                   suppressHydrationWarning
@@ -118,6 +165,21 @@ export function SportsScoreboard({ initialMatches = [] }: { initialMatches?: any
                   <span className="relative z-10">{tab.label}</span>
                 </button>
               ))}
+            </div>
+
+            <button
+               onClick={() => refreshScores()}
+               disabled={isRefreshing}
+               suppressHydrationWarning
+               className={`h-9 px-4 flex items-center gap-2 bg-white dark:bg-zinc-900 border border-border shadow-sm rounded-sm text-[9px] font-black uppercase tracking-widest transition-all hover:bg-zinc-50 dark:hover:bg-zinc-800 disabled:opacity-50 ${isRefreshing ? 'text-primary' : 'text-muted-foreground'}`}
+            >
+               {isRefreshing ? (
+                 <Loader2 className="h-3 w-3 animate-spin" />
+               ) : (
+                 <RefreshCw className={`h-3 w-3 ${isRefreshing ? 'animate-spin' : ''}`} />
+               )}
+               {isRefreshing ? (language === 'hi' ? 'अपडेट हो रहा है' : 'REFRESHING') : (language === 'hi' ? 'रिफ्रेश' : 'REFRESH')}
+            </button>
            </div>
            
            <div className="hidden md:flex gap-3">
@@ -137,14 +199,84 @@ export function SportsScoreboard({ initialMatches = [] }: { initialMatches?: any
         </div>
 
         <div className="flex gap-6 overflow-x-auto pb-6 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar snap-x snap-mandatory min-h-[100px]">
-          {filteredMatches.length > 0 ? (
+          {activeTab === 'POINTS' ? (
+            <div className="w-full flex flex-col">
+              <div className="bg-white dark:bg-zinc-900 border border-border shadow-xl rounded-sm overflow-hidden overflow-x-auto custom-scrollbar">
+                <table className="w-full text-left border-collapse min-w-[600px]">
+                  <thead>
+                     <tr className="bg-zinc-50 dark:bg-zinc-800 border-b border-border">
+                       <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-zinc-500">Pos</th>
+                       <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-zinc-500">Team</th>
+                       <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-zinc-500 text-center">P</th>
+                       <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-zinc-500 text-center">W</th>
+                       <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-zinc-500 text-center">L</th>
+                       <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-zinc-500 text-center">PTS</th>
+                       <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-zinc-500 text-center">NRR</th>
+                     </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {pointsTableData.map((item: PointsTableEntry) => (
+                      <tr key={item.rank} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/50 transition-colors">
+                        <td className="px-6 py-4 text-xs font-black text-zinc-400">{item.rank}</td>
+                        <td className="px-6 py-4 text-xs font-bold text-foreground">{item.team}</td>
+                        <td className="px-6 py-4 text-xs font-bold text-center text-zinc-500">{item.matches}</td>
+                        <td className="px-6 py-4 text-xs font-bold text-center text-emerald-600">{item.won}</td>
+                        <td className="px-6 py-4 text-xs font-bold text-center text-red-600">{item.lost}</td>
+                        <td className="px-6 py-4 text-xs font-black text-center text-primary">{item.pts}</td>
+                        <td className="px-6 py-4 text-[10px] font-mono font-bold text-center text-zinc-400">{item.nrr}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 w-full">
+                 {/* Orange Cap */}
+                 <div className="bg-white dark:bg-zinc-900 border border-border shadow-xl rounded-sm overflow-hidden">
+                    <div className="bg-orange-500 px-4 py-2 text-white text-[10px] font-black uppercase tracking-widest">
+                       Orange Cap (Most Runs)
+                    </div>
+                    <table className="w-full text-left">
+                       <tbody className="divide-y divide-border">
+                          {topBattersData.map((p: PlayerStatsEntry) => (
+                             <tr key={p.name} className="text-xs">
+                                <td className="px-4 py-3 font-black text-zinc-400 w-8">{p.rank}</td>
+                                <td className="px-4 py-3 font-bold">{p.name} ({p.team})</td>
+                                <td className="px-4 py-3 font-black text-right text-orange-600">{p.runs}</td>
+                             </tr>
+                          ))}
+                       </tbody>
+                    </table>
+                 </div>
+
+                 {/* Purple Cap */}
+                 <div className="bg-white dark:bg-zinc-900 border border-border shadow-xl rounded-sm overflow-hidden">
+                    <div className="bg-purple-600 px-4 py-2 text-white text-[10px] font-black uppercase tracking-widest">
+                       Purple Cap (Most Wickets)
+                    </div>
+                    <table className="w-full text-left">
+                       <tbody className="divide-y divide-border">
+                          {topBowlersData.map((p: PlayerStatsEntry) => (
+                             <tr key={p.name} className="text-xs">
+                                <td className="px-4 py-3 font-black text-zinc-400 w-8">{p.rank}</td>
+                                <td className="px-4 py-3 font-bold">{p.name} ({p.team})</td>
+                                <td className="px-4 py-3 font-black text-right text-purple-600">{p.wickets}</td>
+                             </tr>
+                          ))}
+                       </tbody>
+                    </table>
+                 </div>
+              </div>
+            </div>
+          ) : (
+          filteredMatches.length > 0 ? (
             filteredMatches.map((match) => (
               <motion.div 
                 key={match.id} 
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 whileHover={{ y: -4 }}
-                onClick={() => setSelectedMatch(match)}
+                onClick={() => handleMatchClick(match)}
                 className="min-w-[320px] sm:min-w-[400px] bg-white dark:bg-zinc-900 border border-border/60 shadow-xl shadow-black/5 rounded-sm overflow-hidden snap-start flex-shrink-0 group cursor-pointer"
               >
                {/* Header */}
@@ -248,12 +380,16 @@ export function SportsScoreboard({ initialMatches = [] }: { initialMatches?: any
             </motion.div>
           ))
         ) : (
-          <div className="w-full flex flex-col items-center justify-center py-12 border border-dashed border-border/60 rounded-sm bg-white/50 dark:bg-zinc-900/50">
-             <Info className="h-6 w-6 text-muted-foreground/30 mb-3" />
+          <div className="w-full flex flex-col items-center justify-center py-16 border border-dashed border-border/60 rounded-sm bg-white/50 dark:bg-zinc-900/50 gap-3">
+             <Trophy className="h-8 w-8 text-primary/20 mb-1" />
              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                {language === 'hi' ? 'कोई मैच नहीं मिला' : `NO ${activeTab} MATCHES FOUND`}
+                {language === 'hi' ? 'कोई IPL मैच नहीं मिला' : `NO IPL ${activeTab} MATCHES`}
+             </p>
+             <p className="text-[9px] text-muted-foreground/50 uppercase tracking-widest">
+               {language === 'hi' ? 'बाद में दोबारा जांचें' : 'Check back later or refresh'}
              </p>
           </div>
+          )
         )}
         </div>
       </div>
@@ -297,86 +433,191 @@ export function SportsScoreboard({ initialMatches = [] }: { initialMatches?: any
                  </button>
               </div>
 
-              <div className="p-8 space-y-10">
-                 {/* Match Info Grid */}
-                 <div className="grid grid-cols-2 gap-8">
-                    <div className="flex flex-col gap-2">
-                       <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                          <Clock className="h-3 w-3" /> DATE & TIME
-                       </span>
-                       <span className="font-serif text-lg italic">{selectedMatch.date} • {selectedMatch.time}</span>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                       <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                          <MapPin className="h-3 w-3" /> VENUE
-                       </span>
-                       <span className="font-serif text-lg italic">{selectedMatch.venue}</span>
-                    </div>
-                 </div>
+               <div className="p-6 space-y-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                  {/* Head to Head Scoring */}
+                  <div className="space-y-4">
+                     {/* Team 1 Large */}
+                     <div className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-border/40">
+                        <div className="flex items-center gap-4">
+                           <div className="w-1.5 h-12 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.1)]" style={{ backgroundColor: selectedMatch.team1.color || '#1a367c' }} />
+                           <div className="flex flex-col">
+                              <span className={`text-2xl font-black tracking-tighter ${language === 'hi' && selectedMatch.team1.nameHi ? 'font-hindi-serif' : 'font-serif italic'}`}>
+                                 {language === 'hi' && selectedMatch.team1.nameHi ? selectedMatch.team1.nameHi : selectedMatch.team1.nameEn}
+                              </span>
+                              <span className="text-[10px] font-black text-muted-foreground tracking-widest uppercase">INNINGS 1</span>
+                           </div>
+                        </div>
+                        <div className="flex flex-col items-end">
+                           {selectedMatch.status === 'UPCOMING' ? (
+                              <span className="text-sm font-black text-muted-foreground/40 tracking-widest uppercase">TBA</span>
+                           ) : (
+                              <>
+                                 <span className="text-3xl font-black tracking-tighter tabular-nums">{selectedMatch.team1.score}</span>
+                                 <span className="text-[10px] font-bold text-muted-foreground">({selectedMatch.team1.overs} ov)</span>
+                              </>
+                           )}
+                        </div>
+                     </div>
 
-                 {/* Head to Head Scoring */}
-                 <div className="space-y-6">
-                    {/* Team 1 Large */}
-                    <div className="flex items-center justify-between group">
-                       <div className="flex items-center gap-6">
-                          <div className="w-2 h-14 rounded-full" style={{ backgroundColor: selectedMatch.team1.color || '#1a367c' }} />
-                          <div className="flex flex-col">
-                             <span className={`text-4xl font-black tracking-tighter transition-colors group-hover:text-primary ${language === 'hi' && selectedMatch.team1.nameHi ? 'font-hindi-serif' : 'font-serif italic'}`}>
-                                {language === 'hi' && selectedMatch.team1.nameHi ? selectedMatch.team1.nameHi : selectedMatch.team1.nameEn}
-                             </span>
-                             <span className="text-xs font-black text-muted-foreground tracking-widest uppercase mt-1">INNINGS 1</span>
+                     {/* Team 2 Large */}
+                     <div className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-border/40">
+                        <div className="flex items-center gap-4">
+                           <div className="w-1.5 h-12 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.1)]" style={{ backgroundColor: selectedMatch.team2.color || '#6b7280' }} />
+                           <div className="flex flex-col">
+                              <span className={`text-2xl font-black tracking-tighter ${language === 'hi' && selectedMatch.team2.nameHi ? 'font-hindi-serif' : 'font-serif italic'}`}>
+                                 {language === 'hi' && selectedMatch.team2.nameHi ? selectedMatch.team2.nameHi : selectedMatch.team2.nameEn}
+                              </span>
+                              <span className="text-[10px] font-black text-muted-foreground tracking-widest uppercase">INNINGS 2</span>
+                           </div>
+                        </div>
+                        <div className="flex flex-col items-end">
+                           {selectedMatch.status === 'UPCOMING' ? (
+                              <span className="text-sm font-black text-muted-foreground/40 tracking-widest uppercase">TBA</span>
+                           ) : (
+                              <>
+                                 <span className="text-3xl font-black tracking-tighter tabular-nums">{selectedMatch.team2.score}</span>
+                                 <span className="text-[10px] font-bold text-muted-foreground">({selectedMatch.team2.overs} ov)</span>
+                              </>
+                           )}
+                        </div>
+                     </div>
+                  </div>
+
+                  {/* Match Info Summary */}
+                  <div className="grid grid-cols-2 gap-4">
+                     <div className="p-3 bg-zinc-50 dark:bg-zinc-800/30 rounded-md border border-border/30">
+                        <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest block mb-1">Venue</span>
+                        <span className="text-xs font-bold text-foreground">{selectedMatch.venue}</span>
+                     </div>
+                     <div className="p-3 bg-zinc-50 dark:bg-zinc-800/30 rounded-md border border-border/30">
+                        <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest block mb-1">Status</span>
+                        <span className="text-xs font-bold text-primary">{selectedMatch.status === 'LIVE' ? 'LIVE NOW' : (selectedMatch.status === 'PREVIOUS' ? 'MATCH COMPLETED' : 'UPCOMING')}</span>
+                     </div>
+                  </div>
+
+                  {/* Detailed Stats Section (Cricbuzz Style) */}
+                   {modalLoading ? (
+                     <div className="flex flex-col items-center justify-center py-12 gap-3">
+                       <Loader2 className="h-7 w-7 animate-spin text-primary" />
+                       <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Loading Scorecard...</p>
+                     </div>
+                   ) : (selectedMatch.batting || selectedMatch.bowling) ? (
+                     <div className="space-y-6">
+                      {/* Batting Table */}
+                      {selectedMatch.batting && (
+                        <div className="space-y-3">
+                          <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 flex items-center gap-2">
+                             <div className="w-1.5 h-1.5 bg-primary rounded-full" /> BATTING STATS
+                          </h4>
+                          <div className="border border-border/60 rounded-sm overflow-hidden bg-white dark:bg-zinc-900 shadow-sm">
+                            <table className="w-full text-[11px] text-left">
+                              <thead className="bg-zinc-50 dark:bg-zinc-800/50 text-[9px] font-black uppercase tracking-widest text-muted-foreground border-b border-border/60">
+                                <tr>
+                                  <th className="py-2 px-4">Batter</th>
+                                  <th className="py-2 px-2 text-center">R</th>
+                                  <th className="py-2 px-2 text-center">B</th>
+                                  <th className="py-2 px-2 text-center">4s</th>
+                                  <th className="py-2 px-2 text-center">6s</th>
+                                  <th className="py-2 px-2 text-center">SR</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-border/40">
+                                {selectedMatch.batting.map((b: any, idx: number) => (
+                                  <tr key={idx} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/50 transition-colors">
+                                    <td className="py-2.5 px-4 font-bold text-foreground">{b.name}*</td>
+                                    <td className="py-2.5 px-2 text-center font-black">{b.runs}</td>
+                                    <td className="py-2.5 px-2 text-center text-zinc-500">{b.balls}</td>
+                                    <td className="py-2.5 px-2 text-center text-zinc-500">{b.fours}</td>
+                                    <td className="py-2.5 px-2 text-center text-zinc-500">{b.sixes}</td>
+                                    <td className="py-2.5 px-2 text-center font-bold text-primary">{b.sr}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
                           </div>
-                       </div>
-                       <div className="flex flex-col items-end">
-                          {selectedMatch.status === 'UPCOMING' ? (
-                             <span className="text-xl font-black text-muted-foreground/30 tracking-widest">PENDING</span>
-                          ) : (
-                             <>
-                                <span className="text-5xl font-black tracking-tighter tabular-nums">{selectedMatch.team1.score}</span>
-                                <span className="text-sm font-bold text-muted-foreground">({selectedMatch.team1.overs} overs)</span>
-                             </>
-                          )}
-                       </div>
-                    </div>
+                        </div>
+                      )}
 
-                    <div className="flex items-center gap-4">
-                       <div className="h-px flex-1 bg-zinc-100 dark:bg-zinc-800" />
-                       <span className="text-[10px] font-black text-zinc-300 dark:text-zinc-700 tracking-[1em] ml-[1em]">VS</span>
-                       <div className="h-px flex-1 bg-zinc-100 dark:bg-zinc-800" />
-                    </div>
-
-                    {/* Team 2 Large */}
-                    <div className="flex items-center justify-between group">
-                       <div className="flex items-center gap-6">
-                          <div className="w-2 h-14 rounded-full" style={{ backgroundColor: selectedMatch.team2.color || '#6b7280' }} />
-                          <div className="flex flex-col">
-                             <span className={`text-4xl font-black tracking-tighter transition-colors group-hover:text-primary ${language === 'hi' && selectedMatch.team2.nameHi ? 'font-hindi-serif' : 'font-serif italic'}`}>
-                                {language === 'hi' && selectedMatch.team2.nameHi ? selectedMatch.team2.nameHi : selectedMatch.team2.nameEn}
-                             </span>
-                             <span className="text-xs font-black text-muted-foreground tracking-widest uppercase mt-1">INNINGS 2</span>
+                      {/* Bowling Table */}
+                      {selectedMatch.bowling && (
+                        <div className="space-y-3">
+                          <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 flex items-center gap-2">
+                             <div className="w-1.5 h-1.5 bg-zinc-900 rounded-full" /> BOWLING STATS
+                          </h4>
+                          <div className="border border-border/60 rounded-sm overflow-hidden bg-white dark:bg-zinc-900 shadow-sm">
+                            <table className="w-full text-[11px] text-left">
+                              <thead className="bg-zinc-50 dark:bg-zinc-800/50 text-[9px] font-black uppercase tracking-widest text-muted-foreground border-b border-border/60">
+                                <tr>
+                                  <th className="py-2 px-4">Bowler</th>
+                                  <th className="py-2 px-2 text-center">O</th>
+                                  <th className="py-2 px-2 text-center">M</th>
+                                  <th className="py-2 px-2 text-center">R</th>
+                                  <th className="py-2 px-2 text-center">W</th>
+                                  <th className="py-2 px-2 text-center">Eco</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-border/40">
+                                {selectedMatch.bowling.map((b: any, idx: number) => (
+                                  <tr key={idx} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/50 transition-colors">
+                                    <td className="py-2.5 px-4 font-bold text-foreground">{b.name}</td>
+                                    <td className="py-2.5 px-2 text-center font-black">{b.overs}</td>
+                                    <td className="py-2.5 px-2 text-center text-zinc-500">{b.maidens}</td>
+                                    <td className="py-2.5 px-2 text-center text-zinc-500">{b.runs}</td>
+                                    <td className="py-2.5 px-2 text-center font-black text-emerald-600">{b.wickets}</td>
+                                    <td className="py-2.5 px-2 text-center text-zinc-500">{b.econ}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
                           </div>
-                       </div>
-                       <div className="flex flex-col items-end">
-                          {selectedMatch.status === 'UPCOMING' ? (
-                             <span className="text-xl font-black text-muted-foreground/30 tracking-widest">PENDING</span>
-                          ) : (
-                             <>
-                                <span className="text-5xl font-black tracking-tighter tabular-nums">{selectedMatch.team2.score}</span>
-                                <span className="text-sm font-bold text-muted-foreground">({selectedMatch.team2.overs} overs)</span>
-                             </>
-                          )}
-                       </div>
-                    </div>
-                 </div>
+                        </div>
+                      )}
 
-                 {/* Match Result Footer Callout */}
-                 <div className="bg-zinc-50 dark:bg-zinc-800/50 p-6 rounded-sm border border-border/60 flex items-center justify-center gap-4 text-center">
-                    <Info className="h-5 w-5 text-primary shrink-0" />
-                    <p className={`text-lg font-bold leading-snug ${language === 'hi' ? 'font-hindi' : 'italic font-serif'}`}>
-                       {language === 'hi' ? (selectedMatch.resultHi || selectedMatch.result) : (selectedMatch.resultEn || selectedMatch.result)}
-                    </p>
-                 </div>
-              </div>
+                      {/* Live Indicators */}
+                      {selectedMatch.status === 'LIVE' && selectedMatch.recentOvers && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                           <div className="p-4 bg-zinc-900 text-white rounded-lg border border-zinc-800 relative overflow-hidden group">
+                              <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
+                                 <Radio size={40} />
+                              </div>
+                              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 block mb-2">RECENT OVERS</span>
+                              <div className="text-sm font-black tracking-widest flex items-center gap-3">
+                                 {selectedMatch.recentOvers.split(' ').map((ball: string, i: number) => (
+                                    <span key={i} className={`flex items-center justify-center w-6 h-6 rounded-full text-[10px] ${ball.includes('w') || ball.includes('wd') ? 'bg-zinc-800 text-zinc-400' : (ball === '4' || ball === '6' ? 'bg-primary text-white shadow-[0_0_8px_rgba(239,68,68,0.5)]' : 'bg-zinc-700 text-zinc-300')}`}>
+                                       {ball}
+                                    </span>
+                                 ))}
+                              </div>
+                           </div>
+                           <div className="p-4 bg-emerald-950/20 text-emerald-900 dark:text-emerald-400 rounded-lg border border-emerald-900/20">
+                              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-700/60 block mb-2">PARTNERSHIP</span>
+                              <p className="text-xl font-black tracking-tighter tabular-nums">{selectedMatch.partnership} <span className="text-[10px] font-bold text-emerald-600/60 uppercase">runs</span></p>
+                              {selectedMatch.lastWicket && (
+                                <p className="text-[9px] font-medium text-emerald-800/40 mt-1 uppercase tracking-tight">Last Wkt: {selectedMatch.lastWicket}</p>
+                              )}
+                           </div>
+                        </div>
+                      )}
+                    </div>
+                   ) : (
+                     <div className="flex flex-col items-center justify-center py-10 text-center gap-2 border border-dashed border-border/40 rounded-sm">
+                       <Info className="h-5 w-5 text-muted-foreground/30" />
+                       <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                         {selectedMatch.status === 'UPCOMING' ? 'Match has not started yet' : 'Scorecard unavailable'}
+                       </p>
+                     </div>
+                   )}
+
+                  {/* Match Result Footer Callout */}
+                  <div className="bg-zinc-950 p-6 rounded-lg border border-zinc-800 flex items-center justify-center gap-4 text-center shadow-2xl">
+                     <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary animate-pulse">
+                        <Info className="h-5 w-5" />
+                     </div>
+                     <p className={`text-lg font-black leading-snug text-white tracking-tight ${language === 'hi' ? 'font-hindi' : 'italic font-serif'}`}>
+                        {language === 'hi' ? (selectedMatch.resultHi || selectedMatch.result) : (selectedMatch.resultEn || selectedMatch.result)}
+                     </p>
+                  </div>
+               </div>
 
               {/* Action Bar */}
               <div className="px-8 py-5 bg-zinc-50/50 dark:bg-zinc-800/20 border-t border-border flex justify-between items-center">
@@ -394,6 +635,19 @@ export function SportsScoreboard({ initialMatches = [] }: { initialMatches?: any
       </AnimatePresence>
       
       <style jsx global>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #3f3f46;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #52525b;
+        }
         .hide-scrollbar::-webkit-scrollbar {
           display: none;
         }

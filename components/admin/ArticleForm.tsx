@@ -76,14 +76,14 @@ export function ArticleForm({ article, availableCategories = [], availableAuthor
 
   const validateForm = () => {
     const errors: Record<string, string> = {};
-    if (!formData.title.trim()) errors.title = 'Headline is required';
-    if (!formData.categoryId) errors.category = 'Please select a category';
-    if (!formData.authorId) errors.author = 'Please select an author';
-    if (!formData.excerpt.trim()) errors.excerpt = 'Summary is required for coverage cards';
-    if (!formData.content.trim()) errors.content = 'Body content cannot be empty';
-    if (!coverImage && formData.status === 'published') {
-      errors.image = 'Headline image is mandatory for published reports';
+    
+    // Only title is strictly mandatory for the system (used for slug/URL)
+    if (!formData.title.trim()) {
+      errors.title = 'Headline is required to generate the article URL';
     }
+    
+    // We remove the strict requirements for category, author, excerpt, content, and image
+    // to allow for quick drafting as requested by the user.
     
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
@@ -122,29 +122,34 @@ export function ArticleForm({ article, availableCategories = [], availableAuthor
         .map(t => t.trim())
         .filter(Boolean);
 
-      const selectedCategory = availableCategories.find(c => c.id === formData.categoryId);
+      // Fallback to first available category/author if not selected
+      const finalCategoryId = formData.categoryId || availableCategories[0]?.id || '';
+      const finalAuthorId = formData.authorId || availableAuthors[0]?.id || 'drishyam-editorial';
+      const selectedCategory = availableCategories.find(c => c.id === finalCategoryId);
 
       // 2. Standardized Data Model
       const submitData = {
         title: formData.title,
         slug: slugValue,
-        excerpt: formData.excerpt,
-        content: formData.content,
-        categoryId: formData.categoryId,
+        excerpt: formData.excerpt || '',
+        content: formData.content || '',
+        categoryId: finalCategoryId,
         category: selectedCategory?.name || 'Uncategorized',
+        category_hi: selectedCategory?.name_hi || 'सामान्य', // Added missing Hindi category
         categorySlug: selectedCategory?.slug || 'uncategorized',
-        authorId: formData.authorId,
-        readingTime: Math.ceil(formData.content.length / 500) || 1,
+        authorId: finalAuthorId,
+        readingTime: Math.ceil((formData.content || '').length / 500) || 1,
         contentFont: formData.contentFont,
         status: formData.status,
         featured: formData.featured,
         articleType: formData.articleType,
         tags: tagsArray,
-        coverImage: coverImage,
+        coverImage: coverImage || '',
         galleryImages: galleryImages.filter(Boolean),
         language: formData.language as 'en' | 'hi',
         isBreaking: formData.isBreaking,
         isLive: formData.isLive,
+        shares: 0, // Added missing shares count
       };
 
       if (article) {
@@ -357,7 +362,67 @@ export function ArticleForm({ article, availableCategories = [], availableAuthor
                 </span>
              </div>
              <div className="p-6">
+                <div className="mb-4 flex items-center justify-between gap-4">
+                  <div className="flex-1">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Body Content Editor</p>
+                    <p className="text-[9px] text-muted-foreground italic">Use standard HTML tags like &lt;p&gt;, &lt;h3&gt;, &lt;strong&gt;, or insert images below.</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                     <label className="cursor-pointer bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1.5 rounded-md text-[10px] font-black uppercase tracking-widest transition-colors flex items-center gap-2 border border-primary/20">
+                        <PlusCircle size={14} />
+                        Quick Image Upload
+                        <input 
+                          type="file" 
+                          className="hidden" 
+                          accept="image/*"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            
+                            try {
+                              const body = new FormData();
+                              body.append('file', file);
+                              body.append('folder', 'articles/inline');
+                              
+                              const { uploadImageAction } = await import('@/lib/actions/dashboard-actions');
+                              const res = await uploadImageAction(body);
+                              
+                              if (res.success && res.url) {
+                                const imgTag = `\n<img src="${res.url}" alt="Article image" className="w-full h-auto rounded-xl my-8 shadow-md" />\n`;
+                                
+                                // Insert at cursor position in textarea
+                                const textarea = document.getElementById('article-content-textarea') as HTMLTextAreaElement;
+                                if (textarea) {
+                                  const start = textarea.selectionStart;
+                                  const end = textarea.selectionEnd;
+                                  const text = formData.content;
+                                  const before = text.substring(0, start);
+                                  const after = text.substring(end, text.length);
+                                  setFormData({ ...formData, content: before + imgTag + after });
+                                  
+                                  // Refocus and set cursor after the tag
+                                  setTimeout(() => {
+                                    textarea.focus();
+                                    textarea.setSelectionRange(start + imgTag.length, start + imgTag.length);
+                                  }, 10);
+                                } else {
+                                  // Fallback if textarea not found
+                                  setFormData({ ...formData, content: formData.content + imgTag });
+                                }
+                              } else {
+                                alert('Upload failed: ' + (res.error || 'Unknown error'));
+                              }
+                            } catch (err) {
+                              alert('Upload failed: ' + (err instanceof Error ? err.message : 'Unknown error'));
+                            }
+                          }}
+                        />
+                     </label>
+                  </div>
+                </div>
+
                 <textarea
+                  id="article-content-textarea"
                   placeholder="<p>Start writing the detailed report here...</p>"
                   className={`w-full bg-secondary/5 font-mono text-sm leading-relaxed p-6 border-2 rounded-lg focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all min-h-[500px] ${
                     validationErrors.content ? 'border-red-200' : 'border-border focus:border-primary'
@@ -366,8 +431,29 @@ export function ArticleForm({ article, availableCategories = [], availableAuthor
                   onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                 />
                 <div className="mt-4 flex flex-wrap gap-2">
-                   {['<p>', '<strong>', '<h3>', '<ul>'].map(tag => (
-                      <span key={tag} className="text-[10px] font-mono bg-zinc-100 px-2 py-0.5 rounded border border-zinc-200 text-zinc-600">{tag}</span>
+                   {['<p>', '<strong>', '<h3>', '<ul>', '<li>'].map(tag => (
+                      <button 
+                        key={tag} 
+                        type="button"
+                        onClick={() => {
+                          const textarea = document.getElementById('article-content-textarea') as HTMLTextAreaElement;
+                          if (textarea) {
+                            const start = textarea.selectionStart;
+                            const end = textarea.selectionEnd;
+                            const text = formData.content;
+                            const before = text.substring(0, start);
+                            const after = text.substring(end, text.length);
+                            setFormData({ ...formData, content: before + tag + after });
+                            setTimeout(() => {
+                              textarea.focus();
+                              textarea.setSelectionRange(start + tag.length, start + tag.length);
+                            }, 10);
+                          }
+                        }}
+                        className="text-[10px] font-mono bg-zinc-100 px-2 py-0.5 rounded border border-zinc-200 text-zinc-600 hover:bg-zinc-200"
+                      >
+                        {tag}
+                      </button>
                    ))}
                 </div>
              </div>

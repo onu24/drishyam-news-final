@@ -55,21 +55,15 @@ export function StoryForm({ story }: StoryFormProps) {
   const validateForm = () => {
     const errors: Record<string, string> = {};
 
-    if (!formData.title.trim()) errors.title = 'Title is required';
-    if (!formData.category.trim()) errors.category = 'Category is required';
-    if (!formData.coverImage.trim()) errors.coverImage = 'Cover image is required';
+    if (!formData.title.trim()) {
+      errors.title = 'Title is required for the story URL';
+    }
+    
+    // Most other fields are now optional to allow for quick drafting
+    // slides must still exist, but we ensure there's at least one in state
     if (formData.slides.length === 0) {
       errors.slides = 'Add at least one slide';
     }
-
-    formData.slides.forEach((slide, idx) => {
-      const no = idx + 1;
-      if (!slide.title.trim()) errors[`slide_${idx}_title`] = `Slide ${no} title is required`;
-      if (!slide.caption.trim()) errors[`slide_${idx}_caption`] = `Slide ${no} caption is required`;
-      if (!slide.image.trim() && !slide.video.trim()) {
-        errors[`slide_${idx}_media`] = `Slide ${no} needs image or video`;
-      }
-    });
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
@@ -166,14 +160,14 @@ export function StoryForm({ story }: StoryFormProps) {
       const payload = {
         title: formData.title.trim(),
         slug: slugValue,
-        category: formData.category.trim(),
-        coverImage: formData.coverImage.trim(),
+        category: formData.category.trim() || 'General',
+        coverImage: formData.coverImage.trim() || '',
         slides: formData.slides.map((slide, idx) => ({
           id: slide.id || `slide_${idx + 1}`,
-          title: slide.title.trim(),
-          caption: slide.caption.trim(),
-          image: slide.image.trim(),
-          video: slide.video.trim(),
+          title: slide.title.trim() || `Slide ${idx + 1}`,
+          caption: slide.caption.trim() || '',
+          image: slide.image.trim() || '',
+          video: slide.video.trim() || '',
         })),
       };
 

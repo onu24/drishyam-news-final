@@ -61,13 +61,31 @@ export async function fetchAndFilterAdmin(
 export const getArticleMetadataBySlug = cache(async (slug: string): Promise<NewsArticle | null> => {
   try {
     const db = await getMongoDb();
-    const decodedSlug = decodeURIComponent(slug);
+    let decodedSlug = slug;
+    try {
+      decodedSlug = decodeURIComponent(slug);
+    } catch (e) {
+      // Ignore decoding error
+    }
+
     const doc = await db
       .collection('articles')
       .findOne(
         { slug: decodedSlug },
         { projection: { content: 0, content_hi: 0 } }
       );
+    
+    // Fallback for non-decoded slug
+    if (!doc && decodedSlug !== slug) {
+      const docRaw = await db
+        .collection('articles')
+        .findOne(
+          { slug: slug },
+          { projection: { content: 0, content_hi: 0 } }
+        );
+      if (docRaw) return toArticle(docRaw._id.toString(), docRaw);
+    }
+
     if (doc) return toArticle(doc._id.toString(), doc);
   } catch (e) {
     console.error(`[data-server] getArticleMetadataBySlug(${slug}) error:`, e);

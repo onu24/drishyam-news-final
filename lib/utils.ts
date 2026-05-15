@@ -14,12 +14,13 @@ export function cn(...inputs: ClassValue[]) {
  * - Collapses multiple dashes into one
  */
 export function slugify(text: string): string {
+  if (!text) return '';
   return text
     .toString()
     .toLowerCase()
     .trim()
-    .replace(/[^\p{L}\p{N}\s-]/gu, '')  // Preserves Unicode letters (Hindi) and numbers
-    .replace(/[\s_]+/g, '-')            // Replace spaces and underscores with -
+    .replace(/[^\p{L}\p{N}\p{M}\s-]/gu, '')  // Preserves Unicode letters (Hindi), numbers, and Marks (matras)
+    .replace(/[\s_]+/g, '-')                // Replace spaces and underscores with -
     .replace(/-+/g, '-')                // Replace multiple - with single -
     .replace(/^-+/, '')                 // Trim - from start
     .replace(/-+$/, '');                // Trim - from end

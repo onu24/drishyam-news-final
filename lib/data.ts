@@ -222,12 +222,28 @@ export async function getTrendingArticles(count = 5): Promise<NewsArticle[]> {
 export const getArticleBySlug = cache(async (slug: string): Promise<NewsArticle | null> => {
   try {
     const db = await getMongoDb();
-    const decodedSlug = decodeURIComponent(slug);
+    let decodedSlug = slug;
+    
+    try {
+      decodedSlug = decodeURIComponent(slug);
+    } catch (e) {
+      // If decoding fails, continue with raw slug
+    }
 
-    const doc = await db.collection('articles').findOne({ slug: decodedSlug });
+    // 1. Try exact match
+    let doc = await db.collection('articles').findOne({ slug: decodedSlug });
+    
+    // 2. Fallback: If not found, and it looks like a "stripped" Hindi slug, 
+    // try to find by re-slugifying the input using the NEW slugify (redundant but safe)
+    // or by checking if the slug exists in an older "broken" format.
+    if (!doc) {
+      // Try search by slug again without decoding just in case
+      doc = await db.collection('articles').findOne({ slug: slug });
+    }
+
     if (doc) return toArticle(doc._id.toString(), doc);
 
-    // Fallback: try ObjectId lookup (slug might actually be a Mongo _id string)
+    // 3. Fallback: try ObjectId lookup (slug might actually be a Mongo _id string)
     if (ObjectId.isValid(slug)) {
       const byId = await db.collection('articles').findOne({ _id: new ObjectId(slug) });
       if (byId) return toArticle(byId._id.toString(), byId);

@@ -31,6 +31,8 @@ export interface Author {
   role?: string;
   socialLinks?: {
     twitter?: string;
+    facebook?: string;
+    instagram?: string;
     linkedin?: string;
   };
 }
@@ -183,4 +185,29 @@ export interface JobApplication {
   coverLetter: string;
   resumeUrl: string; // Cloudinary URL
   createdAt: string;
+}
+export interface PointsTableEntry {
+  rank: number;
+  team: string;
+  matches: number;
+  won: number;
+  lost: number;
+  nr: number;
+  pts: number;
+  nrr: string;
+}
+
+export interface PointsTable {
+  tournament: string;
+  entries: PointsTableEntry[];
+}
+
+export interface PlayerStatsEntry {
+  rank: number;
+  name: string;
+  team: string;
+  runs?: number;
+  wickets?: number;
+  avg?: number;
+  sr?: number;
 }

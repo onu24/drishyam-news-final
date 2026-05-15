@@ -4,8 +4,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { ArticleCard } from '@/components/homepage/ArticleCard';
 import { CategorySidebar } from '@/components/category/CategorySidebar';
-import { SportsScoreboard } from '@/components/sports/SportsScoreboard';
-import { getLiveCricketScores } from '@/lib/cricket';
+
 import { 
   getArticlesByCategory, 
   getLatestGlobalArticles, 
@@ -31,14 +30,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const isSports = slug === 'sports' || slug === 'खेल';
 
-  const [category, allArticles, latestGlobal, trending, liveMatches] = await Promise.all([
+  const [category, allArticles, latestGlobal, trending] = await Promise.all([
     getCategoryBySlug(slug),
     getArticlesByCategory(slug, 15),
     getLatestGlobalArticles(6),
     getTrendingArticles(5),
-    isSports ? getLiveCricketScores() : Promise.resolve([])
   ]);
 
   if (!category) {
@@ -81,8 +78,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
           </div>
         </div>
 
-        {/* Specialized Widgets for Categories */}
-        {isSports && <SportsScoreboard initialMatches={liveMatches} />}
+
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
