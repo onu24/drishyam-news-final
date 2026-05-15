@@ -60,17 +60,26 @@ function resolveCategorySlug(article?: Partial<Article> | null): string | null {
   return null;
 }
 
-function revalidatePublicArticlePaths(categorySlug?: string | null) {
+function revalidatePublicArticlePaths(categorySlug?: string | null, articleSlug?: string | null) {
   revalidatePath('/');
   revalidatePath('/latest');
 
-  // Invalidate all dynamic article and category pages
+  // Invalidate the generic dynamic patterns
   revalidatePath('/article/[slug]', 'page');
   revalidatePath('/category/[slug]', 'page');
 
-  // Also invalidate the specific selected category page immediately
+  // Also invalidate the specific paths immediately for faster production updates
   if (categorySlug) {
-    revalidatePath(`/category/${categorySlug}`);
+    const safeCat = categorySlug.startsWith('/') ? categorySlug : `/category/${categorySlug}`;
+    revalidatePath(safeCat);
+    try { revalidatePath(encodeURI(safeCat)); } catch(e){}
+  }
+  
+  if (articleSlug) {
+    const safeArt = articleSlug.startsWith('/') ? articleSlug : `/article/${articleSlug}`;
+    revalidatePath(safeArt);
+    // Vercel sometimes prefers the encoded version for manual revalidation calls
+    try { revalidatePath(encodeURI(safeArt)); } catch(e){}
   }
 }
 
@@ -134,7 +143,7 @@ export async function createArticleAction(
     const categorySlug = resolveCategorySlug(newArticle) || resolveCategorySlug(data);
 
     revalidatePath('/admin/articles');
-    revalidatePublicArticlePaths(categorySlug);
+    revalidatePublicArticlePaths(categorySlug, newArticle.slug || data.slug);
 
     return { success: true, data: newArticle };
   } catch (err) {
@@ -156,7 +165,7 @@ export async function updateArticleAction(id: string, data: Partial<Article>) {
 
     revalidatePath('/admin/articles');
     revalidatePath(`/admin/articles/${id}/edit`);
-    revalidatePublicArticlePaths(nextCategorySlug);
+    revalidatePublicArticlePaths(nextCategorySlug, updated.slug || data.slug || previousArticle?.slug);
 
     // If category changed, invalidate the old category listing too.
     if (previousCategorySlug && previousCategorySlug !== nextCategorySlug) {
@@ -180,7 +189,7 @@ export async function deleteArticleAction(id: string) {
     await deleteArticle(id);
 
     revalidatePath('/admin/articles');
-    revalidatePublicArticlePaths(resolveCategorySlug(existingArticle));
+    revalidatePublicArticlePaths(resolveCategorySlug(existingArticle), existingArticle?.slug);
 
     return { success: true };
   } catch (err) {

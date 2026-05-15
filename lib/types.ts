@@ -43,6 +43,7 @@ export interface Article {
   title: string;
   title_hi?: string;
   slug: string;
+  shortId?: string; // 5-digit unique keyword for short links
   
   // Content
   excerpt: string;
@@ -105,6 +106,7 @@ export interface VisualStory {
   id: string;
   title: string;
   slug: string;
+  shortId?: string;
   coverImage: string;
   category: string;
   slides: {

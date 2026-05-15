@@ -33,7 +33,9 @@ export function StoryForm({ story }: StoryFormProps) {
   const handleShare = async (e: React.MouseEvent) => {
     e.preventDefault();
     if (!story) return;
-    const url = `${window.location.origin}/visual-stories/${story.slug}`;
+    const url = story.shortId 
+      ? `${window.location.origin}/s/${story.shortId}`
+      : `${window.location.origin}/visual-stories/${story.slug}`;
     
     if (navigator.share) {
       try {

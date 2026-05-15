@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { VisualStory } from '@/lib/types';
@@ -16,11 +16,18 @@ interface StoryTableProps {
 export function StoryTable({ initialStories }: StoryTableProps) {
   const [stories, setStories] = useState(initialStories);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleShare = async (story: VisualStory, e: React.MouseEvent) => {
     e.preventDefault();
-    const url = `${window.location.origin}/visual-stories/${story.slug}`;
+    const url = story.shortId 
+      ? `${window.location.origin}/s/${story.shortId}`
+      : `${window.location.origin}/visual-stories/${story.slug}`;
     
     if (navigator.share) {
       try {
@@ -97,16 +104,17 @@ export function StoryTable({ initialStories }: StoryTableProps) {
                 </span>
               </td>
               <td className="py-4 px-6 text-center font-bold text-foreground">{story.slides?.length || 0}</td>
-              <td className="py-4 px-6 text-muted-foreground whitespace-nowrap">
-                {new Date(story.createdAt || Date.now()).toLocaleDateString('en-US', {
+              <td className="py-4 px-6 text-muted-foreground whitespace-nowrap" suppressHydrationWarning>
+                {mounted ? new Date(story.createdAt || Date.now()).toLocaleDateString('en-US', {
                   month: 'short',
                   day: 'numeric',
                   year: 'numeric',
-                })}
+                }) : '---'}
               </td>
               <td className="py-4 px-6 text-right space-x-2 whitespace-nowrap">
                 <button
                   onClick={(e) => handleShare(story, e)}
+                  suppressHydrationWarning
                   className="p-1.5 text-zinc-500 hover:bg-zinc-100 rounded-md transition-colors"
                   title="Share Story"
                 >
@@ -118,6 +126,7 @@ export function StoryTable({ initialStories }: StoryTableProps) {
                 <button
                   onClick={(e) => handleDelete(story.id, e)}
                   disabled={deletingId === story.id}
+                  suppressHydrationWarning
                   className="p-1.5 text-red-600/70 hover:bg-red-50 rounded-md transition-colors disabled:cursor-not-allowed"
                   title="Delete Story"
                 >

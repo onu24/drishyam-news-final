@@ -56,6 +56,7 @@ export function toArticle(id: string, data: Record<string, any>): NewsArticle {
     title,
     title_hi: data.title_hi || null,
     slug: safeSlug,
+    shortId: data.shortId || null,
     excerpt: data.excerpt || '',
     excerpt_hi: data.excerpt_hi || null,
     content: data.content || '',
@@ -94,6 +95,7 @@ function toVisualStory(id: string, data: Record<string, any>): VisualStory {
     id,
     title,
     slug: data.slug || slugify(title),
+    shortId: data.shortId || null,
     coverImage: data.coverImage || FALLBACK_IMAGE,
     category: data.category || 'General',
     slides: Array.isArray(data.slides)
@@ -227,23 +229,25 @@ export const getArticleBySlug = cache(async (slug: string): Promise<NewsArticle 
     try {
       decodedSlug = decodeURIComponent(slug);
     } catch (e) {
-      // If decoding fails, continue with raw slug
+      // Continue with raw slug
     }
 
-    // 1. Try exact match
-    let doc = await db.collection('articles').findOne({ slug: decodedSlug });
+    // Use a multi-pronged approach to find the slug, 
+    // handling potential encoding/normalization mismatches in production.
+    const slugQuery = {
+      $or: [
+        { slug: decodedSlug },
+        { slug: slug },
+        { slug: decodedSlug.normalize('NFC') },
+        { slug: decodedSlug.normalize('NFD') }
+      ]
+    };
+
+    let doc = await db.collection('articles').findOne(slugQuery);
     
-    // 2. Fallback: If not found, and it looks like a "stripped" Hindi slug, 
-    // try to find by re-slugifying the input using the NEW slugify (redundant but safe)
-    // or by checking if the slug exists in an older "broken" format.
-    if (!doc) {
-      // Try search by slug again without decoding just in case
-      doc = await db.collection('articles').findOne({ slug: slug });
-    }
-
     if (doc) return toArticle(doc._id.toString(), doc);
 
-    // 3. Fallback: try ObjectId lookup (slug might actually be a Mongo _id string)
+    // Fallback: try ObjectId lookup
     if (ObjectId.isValid(slug)) {
       const byId = await db.collection('articles').findOne({ _id: new ObjectId(slug) });
       if (byId) return toArticle(byId._id.toString(), byId);

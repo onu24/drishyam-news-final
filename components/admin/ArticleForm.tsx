@@ -177,7 +177,9 @@ export function ArticleForm({ article, availableCategories = [], availableAuthor
   const handleShare = async (e: React.MouseEvent) => {
     e.preventDefault();
     if (!article) return;
-    const url = `${window.location.origin}/article/${article.slug}`;
+    const url = article.shortId 
+      ? `${window.location.origin}/s/${article.shortId}`
+      : `${window.location.origin}/article/${article.slug}`;
     
     if (navigator.share) {
       try {

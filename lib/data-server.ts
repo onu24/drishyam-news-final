@@ -65,27 +65,23 @@ export const getArticleMetadataBySlug = cache(async (slug: string): Promise<News
     try {
       decodedSlug = decodeURIComponent(slug);
     } catch (e) {
-      // Ignore decoding error
+      // Ignore
     }
 
     const doc = await db
       .collection('articles')
       .findOne(
-        { slug: decodedSlug },
+        { 
+          $or: [
+            { slug: decodedSlug },
+            { slug: slug },
+            { slug: decodedSlug.normalize('NFC') },
+            { slug: decodedSlug.normalize('NFD') }
+          ] 
+        },
         { projection: { content: 0, content_hi: 0 } }
       );
     
-    // Fallback for non-decoded slug
-    if (!doc && decodedSlug !== slug) {
-      const docRaw = await db
-        .collection('articles')
-        .findOne(
-          { slug: slug },
-          { projection: { content: 0, content_hi: 0 } }
-        );
-      if (docRaw) return toArticle(docRaw._id.toString(), docRaw);
-    }
-
     if (doc) return toArticle(doc._id.toString(), doc);
   } catch (e) {
     console.error(`[data-server] getArticleMetadataBySlug(${slug}) error:`, e);

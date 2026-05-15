@@ -26,5 +26,17 @@ export function slugify(text: string): string {
     .replace(/-+$/, '');                // Trim - from end
 }
 
+/**
+ * Generates a unique 5-character alphanumeric code for short links.
+ */
+export function generateShortId(): string {
+  const chars = '0123456789abcdefghijklmnopqrstuvwxyz';
+  let result = '';
+  for (let i = 0; i < 5; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
 export const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=1200&auto=format&fit=crop';
 export const FALLBACK_AVATAR = '/placeholder-user.jpg';

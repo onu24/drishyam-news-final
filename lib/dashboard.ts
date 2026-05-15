@@ -105,7 +105,18 @@ export async function createArticle(
 ): Promise<Article> {
   const db = await getMongoDb();
   const now = new Date();
-  const payload = { ...data, views: 0, createdAt: now, updatedAt: now };
+  
+  // Generate a unique 5-digit short code
+  const shortId = generateShortId();
+  
+  const payload = { 
+    ...data, 
+    shortId,
+    views: 0, 
+    createdAt: now, 
+    updatedAt: now 
+  };
+  
   const result = await db.collection('articles').insertOne(payload);
   return toArticle(result.insertedId.toString(), payload);
 }
@@ -115,6 +126,13 @@ export async function updateArticle(id: string, data: Partial<Article>): Promise
   // Strip the id field to avoid $set conflicts
   const { id: _id, ...rest } = data as any;
   const updates = { ...rest, updatedAt: new Date() };
+  
+  // Ensure the article has a shortId if it was created before this feature
+  const existing = await db.collection('articles').findOne({ _id: new ObjectId(id) });
+  if (existing && !existing.shortId) {
+    updates.shortId = generateShortId();
+  }
+
   await db.collection('articles').updateOne({ _id: new ObjectId(id) }, { $set: updates });
   const updated = await db.collection('articles').findOne({ _id: new ObjectId(id) });
   return toArticle(updated!._id.toString(), updated!);
@@ -191,7 +209,8 @@ export async function createVisualStory(
 ): Promise<VisualStory> {
   const db = await getMongoDb();
   const now = new Date();
-  const payload = { ...data, createdAt: now, updatedAt: now };
+  const shortId = generateShortId();
+  const payload = { ...data, shortId, createdAt: now, updatedAt: now };
   const result = await db.collection('visualStories').insertOne(payload);
   return toVisualStory(result.insertedId.toString(), payload);
 }
@@ -200,6 +219,12 @@ export async function updateVisualStory(id: string, data: Partial<VisualStory>):
   const db = await getMongoDb();
   const { id: _id, ...rest } = data as any;
   const updates = { ...rest, updatedAt: new Date() };
+
+  const existing = await db.collection('visualStories').findOne({ _id: new ObjectId(id) });
+  if (existing && !existing.shortId) {
+    updates.shortId = generateShortId();
+  }
+
   await db.collection('visualStories').updateOne({ _id: new ObjectId(id) }, { $set: updates });
   const updated = await db.collection('visualStories').findOne({ _id: new ObjectId(id) });
   return toVisualStory(updated!._id.toString(), updated!);

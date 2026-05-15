@@ -2,7 +2,7 @@
 
 import { Article } from '@/lib/types';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { deleteArticleAction } from '@/lib/actions/dashboard-actions';
 import { useRouter } from 'next/navigation';
 import { Search, Edit2, Trash2, Eye, Calendar, Tag, Share2 } from 'lucide-react';
@@ -12,11 +12,19 @@ export function ArticleTable({ initialArticles }: { initialArticles: Article[] }
   const [articles, setArticles] = useState(initialArticles);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleShare = async (article: Article, e: React.MouseEvent) => {
     e.preventDefault();
-    const url = `${window.location.origin}/article/${article.slug}`;
+    // Prioritize the 5-digit short link if available
+    const url = article.shortId 
+      ? `${window.location.origin}/s/${article.shortId}`
+      : `${window.location.origin}/article/${article.slug}`;
     
     if (navigator.share) {
       try {
@@ -123,10 +131,10 @@ export function ArticleTable({ initialArticles }: { initialArticles: Article[] }
               </div>
               <div className="flex items-center gap-2 text-muted-foreground justify-end">
                 <Calendar className="h-3.5 w-3.5" />
-                <span className="text-xs font-medium">
-                  {new Date((article.updatedAt || article.createdAt) as string).toLocaleDateString('en-IN', {
+                <span className="text-xs font-medium" suppressHydrationWarning>
+                  {mounted ? new Date((article.updatedAt || article.createdAt) as string).toLocaleDateString('en-IN', {
                     day: '2-digit', month: '2-digit', year: 'numeric',
-                  })}
+                  }) : '---'}
                 </span>
               </div>
             </div>
@@ -141,6 +149,7 @@ export function ArticleTable({ initialArticles }: { initialArticles: Article[] }
               </Link>
               <button
                 onClick={(e) => handleShare(article, e)}
+                suppressHydrationWarning
                 className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-secondary text-foreground text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-secondary/80 transition-colors"
               >
                 <Share2 className="h-3.5 w-3.5" />
@@ -149,6 +158,7 @@ export function ArticleTable({ initialArticles }: { initialArticles: Article[] }
               <button
                 onClick={(e) => handleDelete(article.id, e)}
                 disabled={deletingId === article.id}
+                suppressHydrationWarning
                 className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-red-50 text-red-600 text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
               >
                 <Trash2 className="h-3.5 w-3.5" />
@@ -207,15 +217,16 @@ export function ArticleTable({ initialArticles }: { initialArticles: Article[] }
                     {(article.views || 0).toLocaleString()}
                   </div>
                 </td>
-                <td className="py-5 px-6 text-muted-foreground text-xs font-medium whitespace-nowrap">
-                  {new Date((article.updatedAt || article.createdAt) as string).toLocaleDateString('en-US', {
+                <td className="py-5 px-6 text-muted-foreground text-xs font-medium whitespace-nowrap" suppressHydrationWarning>
+                  {mounted ? new Date((article.updatedAt || article.createdAt) as string).toLocaleDateString('en-US', {
                     month: 'short', day: 'numeric', year: 'numeric'
-                  })}
+                  }) : '---'}
                 </td>
                 <td className="py-5 px-6 text-right whitespace-nowrap">
                   <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={(e) => handleShare(article, e)}
+                      suppressHydrationWarning
                       className="p-2 text-zinc-500 hover:bg-zinc-100 rounded-lg transition-colors"
                       title="Share Article"
                     >
@@ -231,6 +242,7 @@ export function ArticleTable({ initialArticles }: { initialArticles: Article[] }
                     <button 
                       onClick={(e) => handleDelete(article.id, e)}
                       disabled={deletingId === article.id}
+                      suppressHydrationWarning
                       className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
                       title="Delete Article"
                     >
