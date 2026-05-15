@@ -17,16 +17,19 @@ declare global {
 }
 
 const clientOptions = {
-  maxPoolSize: 20,
+  maxPoolSize: 10,
+  minPoolSize: 2,
+  connectTimeoutMS: 60000,
+  socketTimeoutMS: 60000,
+  serverSelectionTimeoutMS: 60000,
   appName: 'drishyam-news-web',
 };
 
 const clientPromise =
   global.__drishyamMongoClientPromise || new MongoClient(MONGODB_URI, clientOptions).connect();
 
-if (process.env.NODE_ENV !== 'production') {
-  global.__drishyamMongoClientPromise = clientPromise;
-}
+// Ensure the promise is cached globally to prevent multiple connections in serverless environments
+global.__drishyamMongoClientPromise = clientPromise;
 
 async function safeCreateIndex(
   collection: Collection<Document>,
@@ -65,6 +68,7 @@ async function ensureIndexes(db: Db) {
 
       await Promise.all([
         safeCreateIndex(articles, { slug: 1 }, { name: 'slug_unique', unique: true }),
+        safeCreateIndex(articles, { shortId: 1 }, { name: 'shortId_unique', unique: true, sparse: true }),
         safeCreateIndex(articles, { status: 1, createdAt: -1 }, { name: 'status_createdAt' }),
         safeCreateIndex(articles, { categorySlug: 1, status: 1, createdAt: -1 }, { name: 'category_status_createdAt' }),
         safeCreateIndex(articles, { articleType: 1, status: 1, createdAt: -1 }, { name: 'type_status_createdAt' }),
@@ -87,6 +91,7 @@ async function ensureIndexes(db: Db) {
         safeCreateIndex(categories, { slug: 1 }, { name: 'slug_unique', unique: true }),
         safeCreateIndex(categories, { order: 1, name: 1 }, { name: 'order_name' }),
         safeCreateIndex(visualStories, { slug: 1 }, { name: 'slug_unique', unique: true }),
+        safeCreateIndex(visualStories, { shortId: 1 }, { name: 'shortId_unique', unique: true, sparse: true }),
         safeCreateIndex(visualStories, { createdAt: -1 }, { name: 'createdAt_desc' }),
         safeCreateIndex(users, { email: 1 }, { name: 'email_unique', unique: true }),
         safeCreateIndex(jobOpenings, { isActive: 1, createdAt: -1 }, { name: 'active_createdAt' }),
