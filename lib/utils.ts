@@ -23,7 +23,8 @@ export function slugify(text: string): string {
     .replace(/[\s_]+/g, '-')                // Replace spaces and underscores with -
     .replace(/-+/g, '-')                // Replace multiple - with single -
     .replace(/^-+/, '')                 // Trim - from start
-    .replace(/-+$/, '');                // Trim - from end
+    .replace(/-+$/, '')                 // Trim - from end
+    .slice(0, 100);                     // Limit length to avoid ENAMETOOLONG on filesystems (especially with encoded Unicode)
 }
 
 /**

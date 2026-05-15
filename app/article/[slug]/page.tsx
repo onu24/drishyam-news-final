@@ -31,9 +31,12 @@ export async function generateStaticParams() {
   // Pre-render top 25 articles for build stability. 
   // Others will render on-demand via ISR.
   const articles = await getLatestArticles(25);
-  return articles.map((article) => ({
-    slug: article.slug,
-  }));
+  // Skip slugs that are too long (e.g. > 150 chars) to avoid ENAMETOOLONG errors on some filesystems/Vercel
+  return articles
+    .filter(article => article.slug && article.slug.length < 150)
+    .map((article) => ({
+      slug: article.slug,
+    }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
