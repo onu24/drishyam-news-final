@@ -129,7 +129,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
 
     return (
       <div className="flex flex-col min-h-screen bg-white">
-        <ViewTracker slug={slug} />
+        <ViewTracker slug={article.slug} />
         <ReadingProgress />
         {/* Structured Data for SEO */}
         <Script
