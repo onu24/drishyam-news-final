@@ -10,7 +10,7 @@ import 'server-only';
 import { ObjectId } from 'mongodb';
 import { getMongoDb } from './mongodb';
 import { Article, Category, Author, DashboardStats, ArticleStatus, VisualStory, AboutPageContent, ContactPageContent } from './types';
-import { slugify, FALLBACK_IMAGE } from './utils';
+import { slugify, FALLBACK_IMAGE, generateShortId } from './utils';
 import { toArticle } from './data';
 
 // --------------------------------------------------------------------------
