@@ -25,6 +25,7 @@ import {
   Share2
 } from 'lucide-react';
 import Link from 'next/link';
+import { toast } from 'sonner';
 
 interface ArticleFormProps {
   article?: Article;
@@ -66,6 +67,7 @@ export function ArticleForm({ article, availableCategories = [], availableAuthor
     language: article?.language || 'en',
     isBreaking: article?.isBreaking || false,
     isLive: article?.isLive || false,
+    videoUrl: article?.videoUrl || '',
   });
 
   // Comprehensive Slug Preview
@@ -150,6 +152,7 @@ export function ArticleForm({ article, availableCategories = [], availableAuthor
         language: formData.language as 'en' | 'hi',
         isBreaking: formData.isBreaking,
         isLive: formData.isLive,
+        videoUrl: formData.videoUrl || '',
         shares: 0, // Added missing shares count
       };
 
@@ -587,6 +590,31 @@ export function ArticleForm({ article, availableCategories = [], availableAuthor
                     />
                  </label>
                ))}
+            </div>
+
+            <div className="bg-secondary/10 p-4 rounded-xl border border-border/50 space-y-4">
+              <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <ExternalLink size={12} className="text-primary" /> YouTube Video URL
+              </label>
+              <input
+                type="text"
+                placeholder="https://www.youtube.com/watch?v=..."
+                className="w-full bg-background p-3 border border-border rounded-lg text-xs font-bold focus:ring-2 focus:ring-primary"
+                value={formData.videoUrl}
+                onChange={(e) => {
+                   const url = e.target.value;
+                   setFormData({ 
+                     ...formData, 
+                     videoUrl: url,
+                     articleType: url ? 'video' : formData.articleType 
+                   });
+                }}
+              />
+              {formData.videoUrl && (
+                <div className="aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center text-[10px] text-white/50 border border-white/10 font-bold uppercase tracking-widest">
+                   Preview Active
+                </div>
+              )}
             </div>
 
             <div className="space-y-4 pt-4">

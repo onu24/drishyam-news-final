@@ -13,6 +13,7 @@ interface ArticleContentProps {
   content_hi?: string;
   keyPoints?: string[];
   articleType?: string;
+  videoUrl?: string;
   contentFont?: ArticleContentFont;
 }
 
@@ -26,8 +27,16 @@ const FONT_CLASS_MAP: Record<ArticleContentFont, string> = {
   playfair: 'font-playfair',
 };
 
-export function ArticleContent({ content, content_hi, keyPoints, articleType, contentFont = 'serif' }: ArticleContentProps) {
+export function ArticleContent({ content, content_hi, keyPoints, articleType, videoUrl, contentFont = 'serif' }: ArticleContentProps) {
   const { language, t } = useLanguage();
+
+  const getYouTubeId = (url: string) => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  };
+
+  const videoId = videoUrl ? getYouTubeId(videoUrl) : null;
   
   // Choose correct content based on language with fallback
   const displayContent = (language === 'hi' && content_hi && content_hi.trim() !== '') ? content_hi : (content || content_hi);
@@ -42,6 +51,19 @@ export function ArticleContent({ content, content_hi, keyPoints, articleType, co
     <div className="max-w-[700px] mx-auto break-words">
       <div className="prose prose-lg max-w-none prose-headings:font-serif prose-headings:text-foreground prose-p:text-foreground/90 prose-p:leading-[1.8] prose-p:mb-8 prose-a:text-primary prose-strong:text-foreground prose-a:break-all">
         
+        {/* YouTube Video Embed */}
+        {videoId && (
+          <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-2xl mb-12 bg-black border border-border/40 group">
+            <iframe
+              className="absolute top-0 left-0 w-full h-full"
+              src={`https://www.youtube.com/embed/${videoId}?autoplay=0&rel=0`}
+              title="YouTube video player"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
+          </div>
+        )}
         {/* Key Points for Explainers */}
         {articleType === 'explainer' && keyPoints && keyPoints.length > 0 && (
           <div className="bg-blue-50 border-l-4 border-blue-600 p-8 my-10 rounded-r-md">

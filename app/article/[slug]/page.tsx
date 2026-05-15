@@ -171,6 +171,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                     content_hi={article.content_hi}
                     keyPoints={article.keyPoints}
                     articleType={article.articleType}
+                    videoUrl={article.videoUrl}
                     contentFont={article.contentFont}
                   />
                 </div>
