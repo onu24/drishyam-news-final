@@ -24,7 +24,7 @@ export function slugify(text: string): string {
     .replace(/-+/g, '-')                // Replace multiple - with single -
     .replace(/^-+/, '')                 // Trim - from start
     .replace(/-+$/, '')                 // Trim - from end
-    .slice(0, 100);                     // Limit length to avoid ENAMETOOLONG on filesystems (especially with encoded Unicode)
+    .slice(0, 40);                      // Strict limit for Vercel filesystem (Hindi encodes to 9x length)
 }
 
 /**

@@ -31,10 +31,10 @@ export async function generateStaticParams() {
   // Pre-render top 25 articles for build stability. 
   // Others will render on-demand via ISR.
   const articles = await getLatestArticles(25);
-  // Skip slugs that are too long (e.g. > 50 chars) to avoid ENAMETOOLONG errors on some filesystems/Vercel
-  // Note: Hindi characters expand significantly when encoded, so 50 is a safe limit.
+  // Skip slugs that are too long (e.g. > 40 chars) to avoid ENAMETOOLONG errors on Vercel
+  // Hindi characters expand by 9x, so 40 is the safe upper limit for the filesystem.
   return articles
-    .filter(article => article.slug && article.slug.length < 50)
+    .filter(article => article.slug && article.slug.length < 40)
     .map((article) => ({
       slug: article.slug,
     }));
