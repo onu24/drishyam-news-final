@@ -4,6 +4,8 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { ArticleCard } from '@/components/homepage/ArticleCard';
 import { CategorySidebar } from '@/components/category/CategorySidebar';
+import { SportsScoreboard } from '@/components/sports/SportsScoreboard';
+import { getLiveCricketScores } from '@/lib/cricket';
 
 import { 
   getArticlesByCategory, 
@@ -31,11 +33,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
-  const [category, allArticles, latestGlobal, trending] = await Promise.all([
+  const [category, allArticles, latestGlobal, trending, liveMatches] = await Promise.all([
     getCategoryBySlug(slug),
     getArticlesByCategory(slug, 15),
     getLatestGlobalArticles(6),
     getTrendingArticles(5),
+    slug === 'sports' ? getLiveCricketScores() : Promise.resolve([]),
   ]);
 
   if (!category) {
@@ -50,6 +53,11 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
       <TopBar />
       <Header />
       <Navbar />
+      
+      {/* Real-time IPL Updates - ONLY for Sports Category */}
+      {slug === 'sports' && liveMatches && liveMatches.length > 0 && (
+        <SportsScoreboard initialMatches={liveMatches} />
+      )}
       
       <main className="flex-1 w-full bg-white dark:bg-zinc-950 pb-20">
         {/* Category Header & Breadcrumbs */}

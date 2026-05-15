@@ -12,9 +12,6 @@ import { VisualStories } from '@/components/homepage/VisualStories';
 import { FeedPersonalization } from '@/components/homepage/FeedPersonalization';
 import { AdContainer } from '@/components/AdContainer';
 import { Reveal } from '@/components/animations/Reveal';
-import { SportsScoreboard } from '@/components/sports/SportsScoreboard';
-import { getLiveCricketScores } from '@/lib/cricket';
-
 import { 
   getFeaturedArticle, 
   getLatestArticles, 
@@ -48,7 +45,6 @@ export default async function Home() {
     opinionRaw,
     videoRaw,
     visualStories,
-    liveMatches,
   ] = await Promise.all([
     getFeaturedArticle(),
     getLatestArticles(25),
@@ -64,7 +60,6 @@ export default async function Home() {
     getArticlesByType('opinion', 15),
     getArticlesByType('video', 15),
     getVisualStories(),
-    getLiveCricketScores(),
   ]);
 
   // 2. Deduplication logic using a Set to track seen IDs
@@ -114,11 +109,6 @@ export default async function Home() {
     <div className="flex flex-col min-h-screen bg-white">
       <TopBar />
       <Header />
-      
-      {/* Real-time IPL Updates */}
-      {liveMatches.some((m: any) => (m.status === 'LIVE' || m.status === 'UPCOMING') && m.isIPL) && (
-        <SportsScoreboard initialMatches={liveMatches} />
-      )}
       
       <Navbar />
       <BreakingStrip articles={tickerArticles} />
