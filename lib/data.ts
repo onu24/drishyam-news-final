@@ -232,8 +232,7 @@ export const getArticleBySlug = cache(async (slug: string): Promise<NewsArticle 
       // Continue with raw slug
     }
 
-    // Use a multi-pronged approach to find the slug, 
-    // handling potential encoding/normalization mismatches in production.
+    // Multi-pronged query for slugs (handling normalization/encoding)
     const slugQuery = {
       $or: [
         { slug: decodedSlug },
@@ -245,9 +244,14 @@ export const getArticleBySlug = cache(async (slug: string): Promise<NewsArticle 
 
     let doc = await db.collection('articles').findOne(slugQuery);
     
+    // Fallback 1: If slug is a 5-digit code, try matching shortId
+    if (!doc && slug.length === 5) {
+      doc = await db.collection('articles').findOne({ shortId: slug });
+    }
+
     if (doc) return toArticle(doc._id.toString(), doc);
 
-    // Fallback: try ObjectId lookup
+    // Fallback 2: try ObjectId lookup
     if (ObjectId.isValid(slug)) {
       const byId = await db.collection('articles').findOne({ _id: new ObjectId(slug) });
       if (byId) return toArticle(byId._id.toString(), byId);

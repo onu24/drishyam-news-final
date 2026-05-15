@@ -68,7 +68,7 @@ export const getArticleMetadataBySlug = cache(async (slug: string): Promise<News
       // Ignore
     }
 
-    const doc = await db
+    let doc = await db
       .collection('articles')
       .findOne(
         { 
@@ -81,6 +81,11 @@ export const getArticleMetadataBySlug = cache(async (slug: string): Promise<News
         },
         { projection: { content: 0, content_hi: 0 } }
       );
+
+    // Fallback: If slug is a 5-digit code, try matching shortId
+    if (!doc && slug.length === 5) {
+      doc = await db.collection('articles').findOne({ shortId: slug }, { projection: { content: 0, content_hi: 0 } });
+    }
     
     if (doc) return toArticle(doc._id.toString(), doc);
   } catch (e) {
