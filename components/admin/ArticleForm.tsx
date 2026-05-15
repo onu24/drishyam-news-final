@@ -416,7 +416,7 @@ export function ArticleForm({ article, availableCategories = [], availableAuthor
                               const res = await uploadImageAction(body);
                               
                               if (res.success && res.url) {
-                                const imgTag = `\n<img src="${res.url}" alt="Article image" className="w-full h-auto rounded-xl my-8 shadow-md" />\n`;
+                                const imgTag = `\n<img src="${res.url}" alt="Article image" class="w-full h-auto rounded-xl my-8 shadow-md" />\n`;
                                 
                                 // Insert at cursor position in textarea
                                 const textarea = document.getElementById('article-content-textarea') as HTMLTextAreaElement;

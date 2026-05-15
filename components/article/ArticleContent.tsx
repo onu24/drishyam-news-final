@@ -61,7 +61,7 @@ export function ArticleContent({ content, content_hi, keyPoints, articleType, co
         )}
 
         {paragraphs.map((paragraph, index) => {
-          // Check if it's a heading (starts with #)
+          // 1. Check if it's a heading (starts with #)
           if (paragraph.startsWith('#')) {
             const levelMatch = paragraph.match(/^#+/);
             if (levelMatch) {
@@ -69,7 +69,6 @@ export function ArticleContent({ content, content_hi, keyPoints, articleType, co
                 const text = paragraph.replace(/^#+\s/, '');
                 const HeadingTag = `h${Math.min(level + 1, 6)}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
                 
-                // Create ID for TOC matching the TOC component's logic
                 const id = text.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_]+/g, '-');
                 
                 return (
@@ -85,7 +84,7 @@ export function ArticleContent({ content, content_hi, keyPoints, articleType, co
             }
           }
 
-          // Check for Blockquote (starts with >)
+          // 2. Check for Blockquote (starts with >)
           if (paragraph.startsWith('>')) {
             const text = paragraph.replace(/^>\s/, '');
             return (
@@ -93,6 +92,19 @@ export function ArticleContent({ content, content_hi, keyPoints, articleType, co
                 <blockquote className={`border-l-4 border-primary pl-8 py-2 my-12 italic text-2xl sm:text-3xl ${fontClass} text-muted-foreground leading-relaxed font-serif`}>
                   {text}
                 </blockquote>
+              </Reveal>
+            );
+          }
+
+          // 3. Check for raw HTML tags (like <img> injected by dashboard)
+          const isHtml = paragraph.trim().startsWith('<') && paragraph.trim().endsWith('>');
+          if (isHtml) {
+            return (
+              <Reveal key={index}>
+                <div 
+                  className="my-8 overflow-hidden rounded-xl"
+                  dangerouslySetInnerHTML={{ __html: paragraph }} 
+                />
               </Reveal>
             );
           }
@@ -109,7 +121,9 @@ export function ArticleContent({ content, content_hi, keyPoints, articleType, co
 
             let content = text;
             keywords.forEach(({ word, slug }) => {
-              const regex = new RegExp(`\\b${word}\\b`, 'g');
+              // Only replace if it's not already inside a tag
+              // This is a simple check to avoid breaking <img> tags
+              const regex = new RegExp(`\\b${word}\\b(?![^<]*>)`, 'g');
               content = content.replace(regex, `<a href="${slug}" class="text-primary font-bold hover:underline">${word}</a>`);
             });
             return content;
