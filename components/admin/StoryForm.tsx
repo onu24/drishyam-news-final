@@ -6,8 +6,9 @@ import { VisualStory } from '@/lib/types';
 import { slugify } from '@/lib/utils';
 import { createVisualStoryAction, updateVisualStoryAction } from '@/lib/actions/dashboard-actions';
 import { ImageUpload } from './ImageUpload';
-import { AlertCircle, CheckCircle2, ImagePlus, Loader2, PlusCircle, Save, Trash2, Video } from 'lucide-react';
+import { AlertCircle, CheckCircle2, ImagePlus, Loader2, PlusCircle, Save, Trash2, Video, Share2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface StoryFormProps {
   story?: VisualStory;
@@ -28,6 +29,30 @@ export function StoryForm({ story }: StoryFormProps) {
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!story) return;
+    const url = `${window.location.origin}/visual-stories/${story.slug}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: formData.title,
+          url: url,
+        });
+      } catch (err) {
+        // User cancelled
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(url);
+        toast.success('Link copied to clipboard!');
+      } catch (err) {
+        toast.error('Failed to copy link');
+      }
+    }
+  };
   const [isUploadingCover, setIsUploadingCover] = useState(false);
   const [uploadingSlideIndex, setUploadingSlideIndex] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -428,6 +453,17 @@ export function StoryForm({ story }: StoryFormProps) {
           {loading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
           {story ? 'Update Story' : 'Create Story'}
         </button>
+
+        {story && (
+          <button
+            type="button"
+            onClick={handleShare}
+            className="px-6 py-3 bg-secondary text-foreground font-black uppercase tracking-widest rounded-sm hover:bg-secondary/80 transition-colors inline-flex items-center gap-2 border border-border"
+          >
+            <Share2 size={16} />
+            Share Live
+          </button>
+        )}
 
         <button
           type="button"

@@ -21,7 +21,8 @@ import {
   FileText,
   CloudUpload,
   Images,
-  Trash2
+  Trash2,
+  Share2
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -170,6 +171,31 @@ export function ArticleForm({ article, availableCategories = [], availableAuthor
       setError(`Database Error: ${err instanceof Error ? err.message : 'Failed to reach Firestore'}`);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!article) return;
+    const url = `${window.location.origin}/article/${article.slug}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: formData.title,
+          text: formData.excerpt,
+          url: url,
+        });
+      } catch (err) {
+        // User cancelled
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(url);
+        toast.success('Link copied to clipboard!');
+      } catch (err) {
+        toast.error('Failed to copy link');
+      }
     }
   };
 
@@ -577,6 +603,16 @@ export function ArticleForm({ article, availableCategories = [], availableAuthor
             </div>
 
             <div className="pt-2">
+               {article && (
+                 <button 
+                   type="button"
+                   onClick={handleShare}
+                   className="w-full py-4 bg-secondary text-foreground font-black uppercase tracking-[0.2em] rounded-lg border border-border hover:bg-secondary/80 transition-all flex items-center justify-center gap-3 mb-4 shadow-sm group"
+                 >
+                   <Share2 className="group-hover:text-primary transition-colors" size={18} />
+                   Share Live
+                 </button>
+               )}
                {(isUploadingImage || isUploadingGalleryImages) && (
                  <div className="flex items-center gap-2 mb-4 bg-primary/5 p-3 rounded-lg border border-primary/20 animate-pulse">
                     <CloudUpload className="text-primary animate-bounce" size={16} />

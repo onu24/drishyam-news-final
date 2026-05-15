@@ -6,6 +6,9 @@ import { useRouter } from 'next/navigation';
 import { VisualStory } from '@/lib/types';
 import { deleteVisualStoryAction } from '@/lib/actions/dashboard-actions';
 
+import { Share2 } from 'lucide-react';
+import { toast } from 'sonner';
+
 interface StoryTableProps {
   initialStories: VisualStory[];
 }
@@ -14,6 +17,29 @@ export function StoryTable({ initialStories }: StoryTableProps) {
   const [stories, setStories] = useState(initialStories);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const router = useRouter();
+
+  const handleShare = async (story: VisualStory, e: React.MouseEvent) => {
+    e.preventDefault();
+    const url = `${window.location.origin}/visual-stories/${story.slug}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: story.title,
+          url: url,
+        });
+      } catch (err) {
+        // User cancelled
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(url);
+        toast.success('Link copied to clipboard!');
+      } catch (err) {
+        toast.error('Failed to copy link');
+      }
+    }
+  };
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.preventDefault();
@@ -27,8 +53,9 @@ export function StoryTable({ initialStories }: StoryTableProps) {
       }
       setStories((prev) => prev.filter((story) => story.id !== id));
       router.refresh();
+      toast.success('Visual story deleted successfully');
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to delete story');
+      toast.error(err instanceof Error ? err.message : 'Failed to delete story');
     } finally {
       setDeletingId(null);
     }
@@ -77,14 +104,22 @@ export function StoryTable({ initialStories }: StoryTableProps) {
                   year: 'numeric',
                 })}
               </td>
-              <td className="py-4 px-6 text-right space-x-4 whitespace-nowrap">
-                <Link href={`/admin/stories/${story.id}/edit`} className="text-primary hover:text-primary/80 font-medium text-sm">
+              <td className="py-4 px-6 text-right space-x-2 whitespace-nowrap">
+                <button
+                  onClick={(e) => handleShare(story, e)}
+                  className="p-1.5 text-zinc-500 hover:bg-zinc-100 rounded-md transition-colors"
+                  title="Share Story"
+                >
+                  <Share2 size={16} />
+                </button>
+                <Link href={`/admin/stories/${story.id}/edit`} className="inline-block p-1.5 text-primary hover:bg-primary/10 rounded-md transition-colors" title="Edit Story">
                   Edit
                 </Link>
                 <button
                   onClick={(e) => handleDelete(story.id, e)}
                   disabled={deletingId === story.id}
-                  className="text-red-600/70 hover:text-red-700 font-medium text-sm disabled:cursor-not-allowed"
+                  className="p-1.5 text-red-600/70 hover:bg-red-50 rounded-md transition-colors disabled:cursor-not-allowed"
+                  title="Delete Story"
                 >
                   {deletingId === story.id ? 'Deleting...' : 'Delete'}
                 </button>

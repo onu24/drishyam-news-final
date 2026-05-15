@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { deleteArticleAction } from '@/lib/actions/dashboard-actions';
 import { useRouter } from 'next/navigation';
-import { Search, Edit2, Trash2, Eye, Calendar, Tag } from 'lucide-react';
+import { Search, Edit2, Trash2, Eye, Calendar, Tag, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function ArticleTable({ initialArticles }: { initialArticles: Article[] }) {
@@ -13,6 +13,31 @@ export function ArticleTable({ initialArticles }: { initialArticles: Article[] }
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
+
+  const handleShare = async (article: Article, e: React.MouseEvent) => {
+    e.preventDefault();
+    const url = `${window.location.origin}/article/${article.slug}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: article.title,
+          text: article.excerpt,
+          url: url,
+        });
+      } catch (err) {
+        // User cancelled or share failed
+      }
+    } else {
+      // Fallback: Copy to clipboard
+      try {
+        await navigator.clipboard.writeText(url);
+        toast.success('Link copied to clipboard!');
+      } catch (err) {
+        toast.error('Failed to copy link');
+      }
+    }
+  };
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.preventDefault();
@@ -106,7 +131,7 @@ export function ArticleTable({ initialArticles }: { initialArticles: Article[] }
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-1">
+            <div className="flex items-center gap-3 pt-1">
               <Link
                 href={`/admin/articles/${article.id}/edit`}
                 className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-primary/5 text-primary text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-primary/10 transition-colors"
@@ -114,7 +139,13 @@ export function ArticleTable({ initialArticles }: { initialArticles: Article[] }
                 <Edit2 className="h-3.5 w-3.5" />
                 Edit
               </Link>
-              <div className="w-4"></div>
+              <button
+                onClick={(e) => handleShare(article, e)}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-secondary text-foreground text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-secondary/80 transition-colors"
+              >
+                <Share2 className="h-3.5 w-3.5" />
+                Share
+              </button>
               <button
                 onClick={(e) => handleDelete(article.id, e)}
                 disabled={deletingId === article.id}
@@ -182,7 +213,14 @@ export function ArticleTable({ initialArticles }: { initialArticles: Article[] }
                   })}
                 </td>
                 <td className="py-5 px-6 text-right whitespace-nowrap">
-                  <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={(e) => handleShare(article, e)}
+                      className="p-2 text-zinc-500 hover:bg-zinc-100 rounded-lg transition-colors"
+                      title="Share Article"
+                    >
+                      <Share2 className="h-4 w-4" />
+                    </button>
                     <Link
                       href={`/admin/articles/${article.id}/edit`}
                       className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"
