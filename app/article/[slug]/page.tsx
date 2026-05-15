@@ -24,6 +24,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import Script from 'next/script';
+import { ScrollToTop } from '@/components/article/ScrollToTop';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0; 
@@ -137,7 +138,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
           strategy="afterInteractive"
         />
-        
+        <ScrollToTop />
         <TopBar />
         <Header />
         <Navbar />

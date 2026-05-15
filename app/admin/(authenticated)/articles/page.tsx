@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Plus } from 'lucide-react';
 import { getAllArticles } from '@/lib/dashboard';
 import { ArticleTable } from '@/components/admin/ArticleTable';
 
@@ -16,9 +17,10 @@ export default async function ArticlesPage() {
         </div>
         <Link
           href="/admin/articles/new"
-          className="px-6 py-3 bg-primary text-primary-foreground font-medium rounded-sm hover:bg-primary/90 transition-colors shadow-sm"
+          className="group flex items-center gap-2 px-6 py-3 bg-primary text-white text-xs font-black uppercase tracking-[0.2em] rounded-xl hover:bg-primary/90 hover:-translate-y-0.5 transition-all shadow-lg shadow-primary/20 active:scale-95"
         >
-          + New Article
+          <Plus className="w-4 h-4 transition-transform group-hover:rotate-90" />
+          <span>New Article</span>
         </Link>
       </div>
 

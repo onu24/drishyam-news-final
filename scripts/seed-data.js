@@ -3,7 +3,7 @@ const { MongoClient } = require('mongodb');
 // This script seeds the MongoDB database with initial categories and an admin author.
 // It ensures that the dashboard is ready for use immediately after migration.
 
-const MONGODB_URI = 'mongodb+srv://Neeraj_news:neerajonu2026news@cluster0.mmyu0vw.mongodb.net/?appName=Cluster0onu';
+const MONGODB_URI = 'mongodb+srv://Neeraj_news:neerajon@cluster0.mmyu0vw.mongodb.net/?appName=Cluster0onu';
 const MONGODB_DB = 'drishyam_news';
 
 const CATEGORIES = [
