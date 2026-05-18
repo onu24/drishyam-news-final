@@ -12,6 +12,7 @@ import { ReadingProgress } from '@/components/article/ReadingProgress';
 import { TableOfContents } from '@/components/article/TableOfContents';
 import { RelatedEngagement } from '@/components/article/RelatedEngagement';
 import { ViewTracker } from '@/components/article/ViewTracker';
+import { ArticleAuthor } from '@/components/article/ArticleAuthor';
 import { 
   getArticleBySlug, 
   getAuthorById, 
@@ -175,6 +176,8 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                     videoUrl={article.videoUrl}
                     contentFont={article.contentFont}
                   />
+
+                  <ArticleAuthor author={author || undefined} />
                 </div>
 
                 {galleryImages.length > 0 && (

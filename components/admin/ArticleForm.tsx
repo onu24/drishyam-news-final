@@ -282,8 +282,8 @@ export function ArticleForm({ article, availableCategories = [], availableAuthor
               />
 
               <div className="mt-6 pt-6 border-t border-border/60 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex-1">
                     <h4 className="text-[11px] font-black uppercase tracking-widest text-foreground/80 flex items-center gap-2">
                       <Images size={14} />
                       Article Gallery (Multiple Images)
@@ -292,24 +292,73 @@ export function ArticleForm({ article, availableCategories = [], availableAuthor
                       Upload extra photos for this article. On mobile these will show as swipe slides.
                     </p>
                   </div>
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
+                  <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                    <div className="relative flex-1 sm:flex-initial min-w-[200px] flex gap-2">
                        <input
                         type="url"
-                        placeholder="Paste image URL for gallery..."
+                        placeholder="Paste image URL..."
                         className="w-full bg-background p-3 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20"
                         value={newGalleryUrl}
                         onChange={(e) => setNewGalleryUrl(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddGalleryUrl())}
                       />
+                      <button
+                        type="button"
+                        onClick={handleAddGalleryUrl}
+                        className="px-4 py-2 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-widest rounded-md hover:bg-black transition-colors shrink-0"
+                      >
+                        Add URL
+                      </button>
                     </div>
-                    <button
-                      type="button"
-                      onClick={handleAddGalleryUrl}
-                      className="px-4 py-2 bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest rounded-md hover:bg-black transition-colors"
-                    >
-                      Add URL
-                    </button>
+
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                      <span className="text-[10px] text-muted-foreground uppercase font-black px-1 hidden sm:inline">or</span>
+                      <label className="w-full sm:w-auto cursor-pointer bg-primary text-primary-foreground px-4 py-3 rounded-md text-[10px] font-black uppercase tracking-widest hover:bg-black transition-colors flex items-center justify-center gap-2 shadow-sm shrink-0">
+                        <CloudUpload size={14} className={isUploadingGalleryImages ? "animate-bounce" : ""} />
+                        {isUploadingGalleryImages ? 'Uploading...' : 'Upload Image'}
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/*"
+                          multiple
+                          disabled={isUploadingGalleryImages}
+                          onChange={async (e) => {
+                            const files = e.target.files;
+                            if (!files || files.length === 0) return;
+                            
+                            setIsUploadingGalleryImages(true);
+                            try {
+                              const newUrls: string[] = [];
+                              const { uploadImageAction } = await import('@/lib/actions/dashboard-actions');
+                              
+                              for (let i = 0; i < files.length; i++) {
+                                const file = files[i];
+                                const body = new FormData();
+                                body.append('file', file);
+                                body.append('folder', 'articles/gallery');
+                                
+                                const res = await uploadImageAction(body);
+                                if (res.success && res.url) {
+                                  newUrls.push(res.url);
+                                } else {
+                                  toast.error(`Upload failed for ${file.name}: ${res.error || 'Unknown error'}`);
+                                }
+                              }
+                              
+                              if (newUrls.length > 0) {
+                                setGalleryImages((prev) => Array.from(new Set([...prev, ...newUrls])));
+                                toast.success(`Successfully uploaded ${newUrls.length} image(s)!`);
+                              }
+                            } catch (err) {
+                              toast.error('Failed to upload gallery image(s)');
+                              console.error(err);
+                            } finally {
+                              setIsUploadingGalleryImages(false);
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
                   </div>
                 </div>
 

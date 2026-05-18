@@ -130,40 +130,8 @@ export function ArticleHeader({ article, author }: ArticleHeaderProps) {
         )}
 
         {/* Editorial Metadata Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-8 pb-10 border-b-2 border-zinc-100 mt-12 bg-zinc-50/50 p-6 rounded-sm border border-zinc-200/50">
-          {author ? (
-            <div className="flex items-center gap-5">
-              <div className="relative w-14 h-14 shrink-0 rounded-full overflow-hidden bg-zinc-200 border-2 border-white shadow-sm ring-1 ring-zinc-200">
-                  <AvatarImage
-                    src={author.avatar || '/placeholder-user.jpg'}
-                    alt={author.name}
-                  />
-              </div>
-              <div className="flex flex-col">
-                <p className="font-bold text-lg text-foreground leading-none mb-1.5">{author.name}</p>
-                <div className="flex items-center gap-2">
-                   <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-black">
-                    {author.role || (language === 'hi' ? 'वरिष्ठ संवाददाता' : 'Senior Correspondent')}
-                  </p>
-                   {author.socialLinks?.twitter && (
-                      <span className="text-[10px] text-primary/60 font-bold tracking-tighter underline underline-offset-4 decoration-1 decoration-primary/20 cursor-pointer">@{language === 'hi' ? 'सत्यापित' : 'Verified'}</span>
-                   )}
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center gap-5">
-               <div className="w-14 h-14 rounded-full bg-zinc-900 flex items-center justify-center text-white font-serif text-lg italic shadow-xl">
-                  D
-               </div>
-               <div className="flex flex-col">
-                  <p className="font-bold text-lg text-foreground leading-none mb-1.5">{language === 'hi' ? 'दृश्यम न्यूजरूम' : 'Drishyam Newsroom'}</p>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-black">{language === 'hi' ? 'संपादकीय टीम' : 'Editorial Team'}</p>
-               </div>
-            </div>
-          )}
-          
-          <div className="flex items-center gap-6 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">
+        <div className="flex items-center justify-between pb-6 pt-6 border-b-2 border-zinc-100 mt-12 bg-zinc-50/50 px-6 rounded-sm border border-zinc-200/50">
+          <div className="flex flex-wrap items-center gap-6 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 w-full justify-between sm:justify-start">
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4 text-zinc-300" />
               <span>{formatDate(article.createdAt)}</span>
@@ -173,7 +141,7 @@ export function ArticleHeader({ article, author }: ArticleHeaderProps) {
               <span>{readingTime}m {t('read')}</span>
             </div>
             {article.views !== undefined && (
-              <div className="hidden sm:flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <Eye className="h-4 w-4 text-zinc-300" />
                 <span>{article.views.toLocaleString()}</span>
               </div>
