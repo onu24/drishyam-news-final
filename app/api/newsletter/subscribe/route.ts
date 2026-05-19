@@ -32,6 +32,7 @@ export async function POST(request: NextRequest) {
       await sendMail({
         to: email,
         subject: 'Welcome to Drishyam News Newsletter!',
+        text: `Namaste,\n\nThank you for subscribing to the Drishyam News Daily Briefing. You are now part of our community staying informed with the most accurate and latest news from India and around the world.\n\nWhat to expect:\n- Daily morning briefings\n- Breaking news alerts\n- Exclusive opinion pieces and deep dives\n\n© ${new Date().getFullYear()} Drishyam News. All rights reserved.`,
         html: `
           <div style="font-family: serif, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
             <h1 style="color: #e11d48; text-align: center; border-bottom: 2px solid #e11d48; padding-bottom: 10px;">DRISHYAM NEWS</h1>

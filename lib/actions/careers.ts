@@ -185,6 +185,7 @@ export async function submitApplication(formData: FormData) {
       const mailOptions = {
         from: `"Drishyam Careers" <${process.env.SMTP_USER}>`,
         to: process.env.CAREERS_EMAIL || 'careers@drishyamnews.in',
+        replyTo: applicantEmail, // Allow direct reply to the applicant
         subject: `New Job Application: ${jobTitle} - ${applicantName}`,
         text: `
 New Application Received:

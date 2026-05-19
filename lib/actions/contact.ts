@@ -34,6 +34,8 @@ export async function submitContactForm(formData: FormData) {
       await sendMail({
         to: process.env.CAREERS_EMAIL || 'admin@drishyamnews.in',
         subject: `New Contact Form Message: ${subject || 'No Subject'}`,
+        replyTo: email, // Direct reply to the user who submitted the form
+        text: `New Contact Submission\n\nName: ${name}\nEmail: ${email}\nSubject: ${subject || 'No Subject'}\n\nMessage:\n${message}\n\nSent via Drishyam News Contact Form`,
         html: `
           <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
             <h2 style="color: #e11d48; border-bottom: 2px solid #e11d48; padding-bottom: 10px;">New Contact Submission</h2>
@@ -57,6 +59,8 @@ export async function submitContactForm(formData: FormData) {
       await sendMail({
         to: email,
         subject: 'We received your message - Drishyam News',
+        replyTo: process.env.CAREERS_EMAIL || 'admin@drishyamnews.in',
+        text: `Namaste ${name}!\n\nThank you for reaching out to Drishyam News.\n\nWe have received your message regarding "${subject || 'General Inquiry'}" and our team will get back to you as soon as possible.\n\nYour query is important to us.\n\nBest Regards,\nTeam Drishyam News\nwww.drishyam-news.com`,
         html: `
           <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
             <h1 style="color: #e11d48; text-align: center;">Namaste ${name}!</h1>
